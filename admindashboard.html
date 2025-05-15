@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | FarmChain</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+        }
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--primary-green) 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .stat-card {
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .verification-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        .action-btns .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar text-white p-0">
+                <div class="p-3">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-leaf me-2"></i>FarmChain
+                    </h4>
+                    <hr class="bg-light">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#dashboard">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#farmers">
+                                <i class="fas fa-users"></i> Farmer Verification
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#products">
+                                <i class="fas fa-apple-alt"></i> Product Moderation
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#orders">
+                                <i class="fas fa-shopping-bag"></i> Order Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#disputes">
+                                <i class="fas fa-exclamation-triangle"></i> Disputes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#analytics">
+                                <i class="fas fa-chart-line"></i> Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#settings">
+                                <i class="fas fa-cog"></i> System Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Top Bar -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Admin Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-download me-1"></i> Export
+                            </button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-success">
+                            <i class="fas fa-sync-alt me-1"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content -->
+                <div id="dashboardContent">
+                    <!-- Stats Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="card stat-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Total Farmers</h6>
+                                            <h3 class="mb-0">142</h3>
+                                        </div>
+                                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                                            <i class="fas fa-users text-success"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-success small mt-2 mb-0">
+                                        <i class="fas fa-arrow-up me-1"></i> 12% from last month
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="card stat-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Active Products</h6>
+                                            <h3 class="mb-0">876</h3>
+                                        </div>
+                                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                            <i class="fas fa-apple-alt text-primary"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-success small mt-2 mb-0">
+                                        <i class="fas fa-arrow-up me-1"></i> 5% from last week
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="card stat-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Pending Verifications</h6>
+                                            <h3 class="mb-0">23</h3>
+                                        </div>
+                                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                            <i class="fas fa-user-check text-warning"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-danger small mt-2 mb-0">
+                                        <i class="fas fa-exclamation-circle me-1"></i> Needs attention
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="card stat-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Open Disputes</h6>
+                                            <h3 class="mb-0">5</h3>
+                                        </div>
+                                        <div class="bg-danger bg-opacity-10 p-3 rounded">
+                                            <i class="fas fa-exclamation-triangle text-danger"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-danger small mt-2 mb-0">
+                                        <i class="fas fa-arrow-up me-1"></i> 2 new today
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="row mb-4">
+                        <div class="col-lg-8 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0">Platform Growth</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="growthChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0">Transaction Types</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="transactionChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Recent Activity</h5>
+                            <button class="btn btn-sm btn-outline-secondary">View All</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Action</th>
+                                            <th>User</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>2023-06-12 09:42</td>
+                                            <td><span class="badge bg-success">Approved</span></td>
+                                            <td>Sunny Acres Farm</td>
+                                            <td>Farmer verification approved</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2023-06-12 08:15</td>
+                                            <td><span class="badge bg-danger">Flagged</span></td>
+                                            <td>Product #FC-4829</td>
+                                            <td>Reported for misleading claims</td>
+                                        </tr>
+                                        <!-- More activities... -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0">Quick Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-success text-start">
+                                            <i class="fas fa-user-check me-2"></i> Review Farmer Applications
+                                        </button>
+                                        <button class="btn btn-outline-primary text-start">
+                                            <i class="fas fa-search me-2"></i> Audit Products
+                                        </button>
+                                        <button class="btn btn-outline-warning text-start">
+                                            <i class="fas fa-gavel me-2"></i> Resolve Disputes
+                                        </button>
+                                        <button class="btn btn-outline-danger text-start">
+                                            <i class="fas fa-ban me-2"></i> Ban User
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Pending Farmer Verifications</h5>
+                                    <button class="btn btn-sm btn-outline-success">View All</button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Farm Name</th>
+                                                    <th>Location</th>
+                                                    <th>Applied</th>
+                                                    <th>Status</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Green Valley Organics</td>
+                                                    <td>Salinas, CA</td>
+                                                    <td>2023-06-10</td>
+                                                    <td><span class="badge bg-warning">Pending</span></td>
+                                                    <td class="action-btns">
+                                                        <button class="btn btn-sm btn-success me-1">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <!-- More verifications... -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Farmer Verification Modal -->
+    <div class="modal fade" id="verificationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Farmer Verification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Farm Details</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Farm Name</label>
+                                <input type="text" class="form-control" value="Green Valley Organics" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Location</label>
+                                <input type="text" class="form-control" value="Salinas, CA" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Farm Size</label>
+                                <input type="text" class="form-control" value="120 acres" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Verification Documents</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Business License</label>
+                                <div class="border p-2 rounded bg-light">
+                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                    business_license.pdf
+                                    <button class="btn btn-sm btn-outline-primary float-end">View</button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Organic Certification</label>
+                                <div class="border p-2 rounded bg-light">
+                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                    organic_cert.pdf
+                                    <button class="btn btn-sm btn-outline-primary float-end">View</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <label class="form-label">Verification Notes</label>
+                        <textarea class="form-control" rows="3" placeholder="Add any notes about this verification..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger">Reject Application</button>
+                    <button type="button" class="btn btn-success">Approve Farmer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            setupCharts();
+            setupEventListeners();
+        });
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            // In a real app, fetch from API/blockchain
+            console.log("Loading admin dashboard data...");
+        }
+
+        // Setup charts
+        function setupCharts() {
+            // Growth Chart
+            const growthCtx = document.getElementById('growthChart').getContext('2d');
+            new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Farmers',
+                            data: [85, 92, 104, 121, 132, 142],
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Products',
+                            data: [420, 512, 645, 723, 815, 876],
+                            borderColor: '#2196F3',
+                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Transaction Chart
+            const transactionCtx = document.getElementById('transactionChart').getContext('2d');
+            new Chart(transactionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Product Purchases', 'Subscription Fees', 'Service Fees', 'Other'],
+                    datasets: [{
+                        data: [65, 15, 15, 5],
+                        backgroundColor: [
+                            '#4CAF50',
+                            '#8BC34A',
+                            '#CDDC39',
+                            '#FFC107'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // View verification details
+            document.querySelectorAll('.view-verification').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const modal = new bootstrap.Modal(document.getElementById('verificationModal'));
+                    modal.show();
+                });
+            });
+            
+            // Approve/reject farmers
+            document.querySelectorAll('.approve-farmer').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const farmerId = this.dataset.id;
+                    approveFarmer(farmerId);
+                });
+            });
+            
+            document.querySelectorAll('.reject-farmer').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const farmerId = this.dataset.id;
+                    rejectFarmer(farmerId);
+                });
+            });
+        }
+
+        // Approve farmer (blockchain integration)
+        async function approveFarmer(farmerId) {
+            try {
+                // In a real app, call your smart contract
+                const contract = new web3.eth.Contract(abi, contractAddress);
+                await contract.methods.approveFarmer(farmerId).send({ from: adminAddress });
+                
+                showToast('Farmer approved successfully');
+                // Refresh the UI
+            } catch (error) {
+                console.error('Approval failed:', error);
+                showToast('Approval failed', 'error');
+            }
+        }
+
+        // Reject farmer
+        async function rejectFarmer(farmerId) {
+            try {
+                // In a real app, call your smart contract
+                const contract = new web3.eth.Contract(abi, contractAddress);
+                await contract.methods.rejectFarmer(farmerId).send({ from: adminAddress });
+                
+                showToast('Farmer application rejected');
+                // Refresh the UI
+            } catch (error) {
+                console.error('Rejection failed:', error);
+                showToast('Rejection failed', 'error');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            const toastContainer = document.getElementById('toastContainer') || document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.style.position = 'fixed';
+            toastContainer.style.bottom = '20px';
+            toastContainer.style.right = '20px';
+            toastContainer.style.zIndex = '1100';
+            toastContainer.appendChild(toast);
+            document.body.appendChild(toastContainer);
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+    </script>
+</body>
+</html>

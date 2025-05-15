@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmChain | Transparent Farm-to-Table Marketplace</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+        }
+        .navbar-brand img {
+            height: 40px;
+        }
+        .btn-farm {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            border: none;
+        }
+        .btn-farm:hover {
+            background-color: var(--dark-green);
+            color: white;
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-green);
+            margin-bottom: 1rem;
+        }
+        .testimonial-card {
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .testimonial-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        .product-card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid #e0e0e0;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        .verification-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 50px;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        .timeline-icon {
+            position: absolute;
+            left: -40px;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-green);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="https://via.placeholder.com/150x50?text=FarmChain" alt="FarmChain Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-it-works">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#marketplace">Marketplace</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#for-farmers">For Farmers</a>
+                    </li>
+                </ul>
+                <div class="ms-lg-3 mt-3 mt-lg-0">
+                    <a href="#connect" class="btn btn-farm">Connect Wallet</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white py-5">
+        <div class="container py-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <h1 class="display-4 fw-bold mb-4">From Farm to Table,<br>With Complete Trust</h1>
+                    <p class="lead mb-4">FarmChain brings transparency to your food using blockchain technology. Verify the journey of every product from the farm to your plate.</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="#marketplace" class="btn btn-light btn-lg px-4 py-2 fw-bold text-success">Shop Fresh Food</a>
+                        <a href="#for-farmers" class="btn btn-outline-light btn-lg px-4 py-2">For Farmers</a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://via.placeholder.com/600x400?text=Farm+to+Table+Journey" alt="Farm to Table Journey" class="img-fluid rounded-3 shadow">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Badges -->
+    <div class="bg-light py-3">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-auto text-center px-4">
+                    <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                    <p class="mb-0 fw-bold">Blockchain Verified</p>
+                </div>
+                <div class="col-auto text-center px-4">
+                    <i class="fas fa-leaf fa-2x text-success mb-2"></i>
+                    <p class="mb-0 fw-bold">100% Organic</p>
+                </div>
+                <div class="col-auto text-center px-4">
+                    <i class="fas fa-truck fa-2x text-success mb-2"></i>
+                    <p class="mb-0 fw-bold">Carbon Neutral Shipping</p>
+                </div>
+                <div class="col-auto text-center px-4">
+                    <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                    <p class="mb-0 fw-bold">Fair Prices for Farmers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-5 bg-white">
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">How FarmChain Works</h2>
+                <p class="lead text-muted">Transparency at every step of your food's journey</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 text-center p-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                        <h4>1. Farmers Register</h4>
+                        <p>Farmers create verified profiles and list their products with complete growing details.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 text-center p-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <h4>2. Products Get Digital IDs</h4>
+                        <p>Each product batch receives a unique NFT with immutable records of its origin and journey.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 text-center p-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-shopping-basket"></i>
+                        </div>
+                        <h4>3. Consumers Shop & Verify</h4>
+                        <p>Scan QR codes to see the complete history before purchase.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Journey Visualization -->
+    <section class="py-5 bg-light">
+        <div class="container py-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <h2 class="fw-bold mb-4">Trace Your Food's Complete Journey</h2>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <div class="timeline-content bg-white p-3 rounded shadow-sm">
+                                <h5>Planted</h5>
+                                <p class="text-muted small mb-0">March 15, 2023 - Organic seeds sown in field #4B</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <div class="timeline-content bg-white p-3 rounded shadow-sm">
+                                <h5>Grown</h5>
+                                <p class="text-muted small mb-0">Daily irrigation with pH-balanced water</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-harvest"></i>
+                            </div>
+                            <div class="timeline-content bg-white p-3 rounded shadow-sm">
+                                <h5>Harvested</h5>
+                                <p class="text-muted small mb-0">June 5, 2023 at 6:00 AM - Hand-picked at peak ripeness</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="timeline-content bg-white p-3 rounded shadow-sm">
+                                <h5>Delivered</h5>
+                                <p class="text-muted small mb-0">Maintained at 4°C throughout transit</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow">
+                        <div class="card-body p-4 text-center">
+                            <h3 class="mb-4">Scan to Verify Authenticity</h3>
+                            <div class="border rounded p-4 mb-4 mx-auto" style="max-width: 300px; background-color: #f8f9fa;">
+                                <i class="fas fa-qrcode fa-5x text-muted mb-3"></i>
+                                <p class="mb-0">Point your camera at the product QR code</p>
+                            </div>
+                            <p class="text-muted">Every FarmChain product comes with a scannable code that reveals its complete blockchain-verified history.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Marketplace Preview -->
+    <section id="marketplace" class="py-5 bg-white">
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Fresh From Our Farms</h2>
+                <p class="lead text-muted">Blockchain-verified produce available now</p>
+            </div>
+            <div class="row g-4">
+                <!-- Product 1 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="product-card h-100">
+                        <div class="verification-badge">
+                            <i class="fas fa-check-circle me-1"></i>Verified
+                        </div>
+                        <img src="image/bananas.jpg" class="card-img-top" alt="Organic Strawberries">
+                        <div class="card-body">
+                            <h5 class="card-title">Organic Strawberries</h5>
+                            <p class="text-success fw-bold mb-2">$4.99/lb</p>
+                            <p class="text-muted small mb-3">Sunny Acres Farm • 12 miles away</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-qrcode me-1"></i>Verify
+                                </button>
+                                <button class="btn btn-sm btn-success">
+                                    <i class="fas fa-cart-plus me-1"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 2 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="product-card h-100">
+                        <div class="verification-badge">
+                            <i class="fas fa-check-circle me-1"></i>Verified
+                        </div>
+                        <img src="image/beef.jpg" class="card-img-top" alt="Free-Range Eggs">
+                        <div class="card-body">
+                            <h5 class="card-title">Free-Range Eggs</h5>
+                            <p class="text-success fw-bold mb-2">$5.50/dozen</p>
+                            <p class="text-muted small mb-3">Green Valley Farm • 8 miles away</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-qrcode me-1"></i>Verify
+                                </button>
+                                <button class="btn btn-sm btn-success">
+                                    <i class="fas fa-cart-plus me-1"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 3 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="product-card h-100">
+                        <div class="verification-badge">
+                            <i class="fas fa-check-circle me-1"></i>Verified
+                        </div>
+                        <img src="image/onion.jpg" class="card-img-top" alt="Heirloom Tomatoes">
+                        <div class="card-body">
+                            <h5 class="card-title">Heirloom Tomatoes</h5>
+                            <p class="text-success fw-bold mb-2">$3.99/lb</p>
+                            <p class="text-muted small mb-3">Heritage Farms • 15 miles away</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-qrcode me-1"></i>Verify
+                                </button>
+                                <button class="btn btn-sm btn-success">
+                                    <i class="fas fa-cart-plus me-1"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 4 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="product-card h-100">
+                        <div class="verification-badge">
+                            <i class="fas fa-check-circle me-1"></i>Verified
+                        </div>
+                        <img src="image/tomatoes3.jpg" class="card-img-top" alt="Raw Honey">
+                        <div class="card-body">
+                            <h5 class="card-title">Raw Wildflower Honey</h5>
+                            <p class="text-success fw-bold mb-2">$12.00/jar</p>
+                            <p class="text-muted small mb-3">Buzzing Acres • 20 miles away</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-qrcode me-1"></i>Verify
+                                </button>
+                                <button class="btn btn-sm btn-success">
+                                    <i class="fas fa-cart-plus me-1"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-5">
+                <a href="#" class="btn btn-farm btn-lg px-5">View Full Marketplace</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- For Farmers Section -->
+    <section id="for-farmers" class="py-5 bg-light">
+        <div class="container py-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <img src="https://via.placeholder.com/600x400?text=Farmers+at+Work" alt="Farmers at Work" class="img-fluid rounded shadow">
+                </div>
+                <div class="col-lg-6">
+                    <h2 class="fw-bold mb-4">For Farmers: Get Fair Prices & Build Trust</h2>
+                    <div class="d-flex mb-4">
+                        <div class="me-4">
+                            <i class="fas fa-money-bill-wave fa-2x text-success mb-2"></i>
+                        </div>
+                        <div>
+                            <h5>Earn More</h5>
+                            <p class="text-muted">Cut out middlemen and receive 20-40% higher prices by selling directly to consumers.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-4">
+                        <div class="me-4">
+                            <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                        </div>
+                        <div>
+                            <h5>Prove Your Practices</h5>
+                            <p class="text-muted">Document your organic/sustainable methods on the blockchain where they can't be faked.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-4">
+                        <div class="me-4">
+                            <i class="fas fa-users fa-2x text-success mb-2"></i>
+                        </div>
+                        <div>
+                            <h5>Build Your Brand</h5>
+                            <p class="text-muted">Create a profile that tells your farm's story and connects directly with customers.</p>
+                        </div>
+                    </div>
+                    <a href="login.html" class="btn btn-farm btn-lg mt-3">Join as a Farmer</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-5 bg-white">
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">What Our Community Says</h2>
+                <p class="lead text-muted">Real stories from farmers and consumers</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="testimonial-card card h-100">
+                        <div class="card-body p-4">
+                            <div class="mb-3 text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="fst-italic mb-4">"For the first time, I can see exactly where my food comes from and how it was grown. The transparency is incredible."</p>
+                            <div class="d-flex align-items-center">
+                                <img src="https://via.placeholder.com/50x50?text=User" alt="User" class="rounded-circle me-3" width="50">
+                                <div>
+                                    <h6 class="mb-0">Sarah Johnson</h6>
+                                    <small class="text-muted">Consumer since 2022</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card card h-100">
+                        <div class="card-body p-4">
+                            <div class="mb-3 text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="fst-italic mb-4">"FarmChain has allowed me to connect directly with customers who appreciate my organic methods. My income has increased by 35%."</p>
+                            <div class="d-flex align-items-center">
+                                <img src="https://via.placeholder.com/50x50?text=Farmers" alt="Farmer" class="rounded-circle me-3" width="50">
+                                <div>
+                                    <h6 class="mb-0">Raj Patel</h6>
+                                    <small class="text-muted">Farmer since 2021</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card card h-100">
+                        <div class="card-body p-4">
+                            <div class="mb-3 text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="fst-italic mb-4">"As a restaurant owner, I can now verify the quality and origin of all my ingredients. My customers love the farm stories we share."</p>
+                            <div class="d-flex align-items-center">
+                                <img src="https://via.placeholder.com/50x50?text=Chef" alt="Chef" class="rounded-circle me-3" width="50">
+                                <div>
+                                    <h6 class="mb-0">Maria Garcia</h6>
+                                    <small class="text-muted">Restaurant Owner</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5 hero-gradient text-white">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <h2 class="fw-bold mb-4">Ready to Experience Transparent Food?</h2>
+                    <p class="lead mb-5">Join thousands of farmers and consumers building a better food system.</p>
+                    <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                        <a href="#" class="btn btn-light btn-lg px-4 py-2 fw-bold text-success">Shop Fresh Food</a>
+                        <a href="#" class="btn btn-outline-light btn-lg px-4 py-2">List Your Farm</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-5">
+        <div class="container py-4">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <img src="https://via.placeholder.com/150x50?text=FarmChain" alt="FarmChain Logo" class="mb-3">
+                    <p>FarmChain brings blockchain transparency to the farm-to-table movement, connecting conscious consumers with ethical farmers.</p>
+                    <div class="d-flex gap-3 mt-4">
+                        <a href="#" class="text-white"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h5 class="mb-3">For Consumers</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white-50">How It Works</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">Marketplace</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">Food Stories</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h5 class="mb-3">For Farmers</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white-50">Get Started</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">Pricing</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">Farmer Resources</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">Success Stories</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h5 class="mb-3">Stay Updated</h5>
+                    <p>Subscribe to our newsletter for farm stories and updates</p>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Your email">
+                        <button class="btn btn-success" type="button">Subscribe</button>
+                    </div>
+                    <small class="text-white-50">By subscribing, you agree to our Privacy Policy</small>
+                </div>
+            </div>
+            <hr class="my-4 bg-secondary">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0 text-white-50">© 2023 FarmChain. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-white-50 me-3">Privacy Policy</a>
+                    <a href="#" class="text-white-50 me-3">Terms of Service</a>
+                    <a href="#" class="text-white-50">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Simple script to highlight active nav link
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmChain | Blockchain-Powered Farmers Market</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+        }
+        .product-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .verification-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .farm-card {
+            border-left: 3px solid var(--primary-green);
+        }
+        .filter-card {
+            position: sticky;
+            top: 20px;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 50px;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        .timeline-icon {
+            position: absolute;
+            left: -40px;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-green);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="logo.png" alt="FarmChain" height="40">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Marketplace</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Local Farms</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">How It Works</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <button class="btn btn-outline-success me-2" id="connectWalletBtn">
+                        <i class="fas fa-wallet me-1"></i> Connect Wallet
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">My Orders</a></li>
+                            <li><a class="dropdown-item" href="#">Saved Items</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Sign Out</a></li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn btn-success ms-2 position-relative" data-bs-toggle="modal" data-bs-target="#cartModal">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white py-5">
+        <div class="container py-4">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h1 class="display-4 fw-bold mb-3">Farm-Fresh Food, Blockchain-Verified</h1>
+                    <p class="lead mb-4">Trace every product from seed to table with our transparent supply chain</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="#marketplace" class="btn btn-light btn-lg px-4">Shop Now</a>
+                        <a href="#" class="btn btn-outline-light btn-lg px-4">How It Works</a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="position-relative">
+                        <img src="image/onion.jpg" class="img-fluid rounded shadow" alt="Fresh produce">
+                        <div class="position-absolute bottom-0 start-0 bg-white text-dark p-3 rounded-end shadow" style="max-width: 300px;">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success bg-opacity-10 p-2 rounded me-3">
+                                    <i class="fas fa-qrcode text-success"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0 fw-bold">Scan to Verify</p>
+                                    <small>Check product authenticity</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Marketplace Section -->
+    <section class="py-5 bg-light" id="marketplace">
+        <div class="container">
+            <div class="row">
+                <!-- Filters Column -->
+                <div class="col-lg-3 mb-4">
+                    <div class="card filter-card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="mb-3">Filters</h5>
+                            
+                            <!-- Search -->
+                            <div class="mb-4">
+                                <label class="form-label">Search</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Apples, milk...">
+                                    <button class="btn btn-success" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Categories -->
+                            <div class="mb-4">
+                                <label class="form-label">Categories</label>
+                                <div class="list-group list-group-flush">
+                                    <a href="#" class="list-group-item list-group-item-action active">
+                                        All Categories
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-apple-alt me-2"></i> Fruits
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-carrot me-2"></i> Vegetables
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-egg me-2"></i> Dairy & Eggs
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-drumstick-bite me-2"></i> Meat
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <!-- Distance -->
+                            <div class="mb-4">
+                                <label class="form-label">Distance</label>
+                                <select class="form-select">
+                                    <option selected>Any distance</option>
+                                    <option>Within 10 miles</option>
+                                    <option>Within 25 miles</option>
+                                    <option>Within 50 miles</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Certifications -->
+                            <div class="mb-4">
+                                <label class="form-label">Certifications</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="organicCheck">
+                                    <label class="form-check-label" for="organicCheck">USDA Organic</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="nonGmoCheck">
+                                    <label class="form-check-label" for="nonGmoCheck">Non-GMO</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="localCheck">
+                                    <label class="form-check-label" for="localCheck">Locally Grown</label>
+                                </div>
+                            </div>
+                            
+                            <!-- Price Range -->
+                            <div class="mb-3">
+                                <label class="form-label">Price Range</label>
+                                <input type="range" class="form-range" min="0" max="100" step="5" id="priceRange">
+                                <div class="d-flex justify-content-between">
+                                    <small>$0</small>
+                                    <small>$100+</small>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-success w-100 mt-2">Apply Filters</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Products Column -->
+                <div class="col-lg-9">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">Fresh From Local Farms</h2>
+                        <div class="d-flex">
+                            <select class="form-select me-2" style="width: 160px;">
+                                <option selected>Sort by: Featured</option>
+                                <option>Price: Low to High</option>
+                                <option>Price: High to Low</option>
+                                <option>Newest Arrivals</option>
+                                <option>Highest Rated</option>
+                            </select>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-success active">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-success">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Grid -->
+                    <div class="row g-4" id="productGrid">
+                        <!-- Product 1 -->
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card product-card h-100">
+                                <span class="verification-badge">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
+                                <img src="image/tomatoes3.jpg" class="card-img-top" alt="Organic Strawberries">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Organic Strawberries</h5>
+                                        <span class="badge bg-success">Local</span>
+                                    </div>
+                                    <p class="text-muted small mb-2">Sunny Acres Farm • 12 miles away</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-success mb-0">$4.99/lb</h4>
+                                        <div class="text-warning">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                            <small class="text-muted ms-1">(24)</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary view-details" data-id="1">
+                                            <i class="fas fa-eye me-1"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-success add-to-cart" data-id="1">
+                                            <i class="fas fa-cart-plus me-1"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                       
+                        <!-- Product 1 -->
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card product-card h-100">
+                                <span class="verification-badge">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
+                                <img src="image/tomatoes3.jpg" class="card-img-top" alt="Organic Strawberries">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Organic Strawberries</h5>
+                                        <span class="badge bg-success">Local</span>
+                                    </div>
+                                    <p class="text-muted small mb-2">Sunny Acres Farm • 12 miles away</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-success mb-0">$4.99/lb</h4>
+                                        <div class="text-warning">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                            <small class="text-muted ms-1">(24)</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary view-details" data-id="1">
+                                            <i class="fas fa-eye me-1"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-success add-to-cart" data-id="1">
+                                            <i class="fas fa-cart-plus me-1"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+
+                        
+                        <!-- Product 1 -->
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card product-card h-100">
+                                <span class="verification-badge">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
+                                <img src="image/tomatoes3.jpg" class="card-img-top" alt="Organic Strawberries">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Organic Strawberries</h5>
+                                        <span class="badge bg-success">Local</span>
+                                    </div>
+                                    <p class="text-muted small mb-2">Sunny Acres Farm • 12 miles away</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-success mb-0">$4.99/lb</h4>
+                                        <div class="text-warning">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                            <small class="text-muted ms-1">(24)</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary view-details" data-id="1">
+                                            <i class="fas fa-eye me-1"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-success add-to-cart" data-id="1">
+                                            <i class="fas fa-cart-plus me-1"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <!-- Product 1 -->
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card product-card h-100">
+                                <span class="verification-badge">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
+                                <img src="image/tomatoes3.jpg" class="card-img-top" alt="Organic Strawberries">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Organic Strawberries</h5>
+                                        <span class="badge bg-success">Local</span>
+                                    </div>
+                                    <p class="text-muted small mb-2">Sunny Acres Farm • 12 miles away</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-success mb-0">$4.99/lb</h4>
+                                        <div class="text-warning">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                            <small class="text-muted ms-1">(24)</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary view-details" data-id="1">
+                                            <i class="fas fa-eye me-1"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-success add-to-cart" data-id="1">
+                                            <i class="fas fa-cart-plus me-1"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <!-- Product 1 -->
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card product-card h-100">
+                                <span class="verification-badge">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
+                                <img src="image/tomatoes3.jpg" class="card-img-top" alt="Organic Strawberries">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Organic Strawberries</h5>
+                                        <span class="badge bg-success">Local</span>
+                                    </div>
+                                    <p class="text-muted small mb-2">Sunny Acres Farm • 12 miles away</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-success mb-0">$4.99/lb</h4>
+                                        <div class="text-warning">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                            <small class="text-muted ms-1">(24)</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary view-details" data-id="1">
+                                            <i class="fas fa-eye me-1"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-success add-to-cart" data-id="1">
+                                            <i class="fas fa-cart-plus me-1"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <!-- Product 1 -->
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card product-card h-100">
+                                <span class="verification-badge">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
+                                <img src="image/tomatoes3.jpg" class="card-img-top" alt="Organic Strawberries">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Organic Strawberries</h5>
+                                        <span class="badge bg-success">Local</span>
+                                    </div>
+                                    <p class="text-muted small mb-2">Sunny Acres Farm • 12 miles away</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-success mb-0">$4.99/lb</h4>
+                                        <div class="text-warning">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                            <small class="text-muted ms-1">(24)</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary view-details" data-id="1">
+                                            <i class="fas fa-eye me-1"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-success add-to-cart" data-id="1">
+                                            <i class="fas fa-cart-plus me-1"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <!-- Product 1 -->
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card product-card h-100">
+                                <span class="verification-badge">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
+                                <img src="image/tomatoes3.jpg" class="card-img-top" alt="Organic Strawberries">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Organic Strawberries</h5>
+                                        <span class="badge bg-success">Local</span>
+                                    </div>
+                                    <p class="text-muted small mb-2">Sunny Acres Farm • 12 miles away</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-success mb-0">$4.99/lb</h4>
+                                        <div class="text-warning">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                            <small class="text-muted ms-1">(24)</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary view-details" data-id="1">
+                                            <i class="fas fa-eye me-1"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-success add-to-cart" data-id="1">
+                                            <i class="fas fa-cart-plus me-1"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                     <!-- Product 1 -->
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card product-card h-100">
+                                <span class="verification-badge">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
+                                <img src="image/tomatoes3.jpg" class="card-img-top" alt="Organic Strawberries">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Organic Strawberries</h5>
+                                        <span class="badge bg-success">Local</span>
+                                    </div>
+                                    <p class="text-muted small mb-2">Sunny Acres Farm • 12 miles away</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-success mb-0">$4.99/lb</h4>
+                                        <div class="text-warning">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                            <small class="text-muted ms-1">(24)</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary view-details" data-id="1">
+                                            <i class="fas fa-eye me-1"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-success add-to-cart" data-id="1">
+                                            <i class="fas fa-cart-plus me-1"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product 1 -->
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card product-card h-100">
+                                <span class="verification-badge">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
+                                <img src="image/tomatoes3.jpg" class="card-img-top" alt="Organic Strawberries">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Organic Strawberries</h5>
+                                        <span class="badge bg-success">Local</span>
+                                    </div>
+                                    <p class="text-muted small mb-2">Sunny Acres Farm • 12 miles away</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-success mb-0">$4.99/lb</h4>
+                                        <div class="text-warning">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                            <small class="text-muted ms-1">(24)</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary view-details" data-id="1">
+                                            <i class="fas fa-eye me-1"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-success add-to-cart" data-id="1">
+                                            <i class="fas fa-cart-plus me-1"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav class="mt-5">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Previous</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Farm Spotlight Section -->
+    <section class="py-5 bg-white">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <h2>Meet Your Farmers</h2>
+                <p class="lead text-muted">Connect directly with the people who grow your food</p>
+            </div>
+            <div class="row g-4">
+                <!-- Farm 1 -->
+                <div class="col-md-4">
+                    <div class="card farm-card h-100">
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <img src="image/vegetables.jpg" class="rounded-circle mb-2" width="100" alt="Sunny Acres Farm">
+                                <h4 class="mb-0">Sunny Acres Farm</h4>
+                                <small class="text-muted">Salinas, CA • 12 miles away</small>
+                            </div>
+                            <p class="mb-3">Family-owned since 1987, specializing in organic berries and stone fruits. Our farming practices prioritize soil health and biodiversity.</p>
+                            <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
+                                <span class="badge bg-success">USDA Organic</span>
+                                <span class="badge bg-success">Non-GMO</span>
+                                <span class="badge bg-success">Sustainable</span>
+                            </div>
+                            <div class="d-grid">
+                                 <a href="farm-store.html?id=1" class="btn btn-outline-success">Visit Farm Store</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- More farms... -->
+
+                <div class="col-md-4">
+    <div class="card farm-card h-100">
+        <div class="card-body">
+            <div class="text-center mb-3">
+                <img src="image/vegetables.jpg" class="rounded-circle mb-2" width="100" alt="Sunny Acres Farm">
+                <h4 class="mb-0">Sunny Acres Farm</h4>
+                <small class="text-muted">Salinas, CA • 12 miles away</small>
+                <div class="mt-2 text-warning">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                    <small class="text-muted ms-1">(42)</small>
+                </div>
+            </div>
+            <p class="mb-3">Family-owned since 1987, specializing in organic berries and stone fruits. Our farming practices prioritize soil health and biodiversity.</p>
+            <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
+                <span class="badge bg-success">USDA Organic</span>
+                <span class="badge bg-success">Non-GMO</span>
+                <span class="badge bg-success">Sustainable</span>
+            </div>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="farm-store.html?id=1" class="btn btn-outline-success flex-grow-1">
+                    Visit Store
+                </a>
+                <button class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Save this farm">
+                    <i class="far fa-heart"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+           <div class="col-md-4">
+    <div class="card farm-card h-100">
+        <div class="card-body">
+            <div class="text-center mb-3">
+                <img src="image/vegetables.jpg" class="rounded-circle mb-2" width="100" alt="Sunny Acres Farm">
+                <h4 class="mb-0">Sunny Acres Farm</h4>
+                <small class="text-muted">Salinas, CA • 12 miles away</small>
+                <div class="mt-2 text-warning">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                    <small class="text-muted ms-1">(42)</small>
+                </div>
+            </div>
+            <p class="mb-3">Family-owned since 1987, specializing in organic berries and stone fruits. Our farming practices prioritize soil health and biodiversity.</p>
+            <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
+                <span class="badge bg-success">USDA Organic</span>
+                <span class="badge bg-success">Non-GMO</span>
+                <span class="badge bg-success">Sustainable</span>
+            </div>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="farm-store.html?id=1" class="btn btn-outline-success flex-grow-1">
+                    Visit Store
+                </a>
+                <button class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Save this farm">
+                    <i class="far fa-heart"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Verification Demo -->
+    <section class="py-5 bg-light">
+        <div class="container py-4">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h2 class="mb-3">How Blockchain Verification Works</h2>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <div class="timeline-content bg-white p-3 rounded shadow-sm">
+                                <h5>Product Registered</h5>
+                                <p class="text-muted small mb-0">Farmer creates a digital record on the blockchain when product is harvested</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                            <div class="timeline-content bg-white p-3 rounded shadow-sm">
+                                <h5>QR Code Generated</h5>
+                                <p class="text-muted small mb-0">Unique QR code linked to the blockchain record is attached to the product</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="timeline-content bg-white p-3 rounded shadow-sm">
+                                <h5>Consumer Verification</h5>
+                                <p class="text-muted small mb-0">Scan the code to view the complete product journey and verify authenticity</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h4 class="mb-4">Try It Yourself</h4>
+                            <div class="border rounded p-4 mb-4 mx-auto" style="max-width: 300px; background-color: #f8f9fa;">
+                                <i class="fas fa-qrcode fa-5x text-muted mb-3"></i>
+                                <p class="mb-0">Scan a FarmChain product QR code</p>
+                            </div>
+                            <button class="btn btn-success">
+                                <i class="fas fa-mobile-alt me-2"></i> Open Scanner
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5 hero-gradient text-white">
+        <div class="container py-4 text-center">
+            <h2 class="mb-3">Ready to Shop Transparently?</h2>
+            <p class="lead mb-4">Join thousands of customers who trust FarmChain for verifiably fresh food</p>
+            <a href="#marketplace" class="btn btn-light btn-lg px-5">Browse Marketplace</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-5">
+        <div class="container py-4">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <img src="logo-white.png" alt="FarmChain" height="40" class="mb-3">
+                    <p>FarmChain brings blockchain transparency to the farm-to-table movement, connecting conscious consumers with ethical farmers.</p>
+                    <div class="d-flex gap-3 mt-4">
+                        <a href="#" class="text-white"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h5 class="mb-3">For Consumers</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white-50">How It Works</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">Marketplace</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">Food Stories</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h5 class="mb-3">For Farmers</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white-50">Get Started</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">Pricing</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">Farmer Resources</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50">Success Stories</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h5 class="mb-3">Stay Updated</h5>
+                    <p>Subscribe to our newsletter for farm stories and updates</p>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Your email">
+                        <button class="btn btn-success" type="button">Subscribe</button>
+                    </div>
+                    <small class="text-white-50">By subscribing, you agree to our Privacy Policy</small>
+                </div>
+            </div>
+            <hr class="my-4 bg-secondary">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0 text-white-50">© 2023 FarmChain. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-white-50 me-3">Privacy Policy</a>
+                    <a href="#" class="text-white-50 me-3">Terms of Service</a>
+                    <a href="#" class="text-white-50">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" id="productModalContent">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="modal fade" id="cartModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Your Cart</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="cartItems">
+                    <!-- Cart items loaded here -->
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <div class="fw-bold">Total: <span id="cartTotal">$0.00</span></div>
+                    <div>
+                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Continue Shopping</button>
+                        <button type="button" class="btn btn-success" id="checkoutBtn">Proceed to Checkout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Marketplace functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            setupEventListeners();
+        });
+
+        // Sample product data (in real app, fetch from API/blockchain)
+        const products = [
+            {
+                id: 1,
+                name: "Organic Strawberries",
+                farm: "Sunny Acres",
+                price: 4.99,
+                unit: "lb",
+                stock: 28,
+                distance: "12 miles",
+                rating: 4.8,
+                image: "strawberries.jpg",
+                category: "Fruits",
+                harvestDate: "2023-06-05",
+                certifications: ["USDA Organic", "Non-GMO"],
+                description: "Grown pesticide-free using sustainable farming practices. Harvested at peak ripeness for maximum flavor.",
+                journey: [
+                    { step: "Planted", date: "2023-03-15", details: "Organic seeds sown in field #4B" },
+                    { step: "Irrigation", date: "Daily", details: "Drip irrigation system maintained optimal moisture" },
+                    { step: "Harvested", date: "2023-06-05", details: "Hand-picked at 6:00 AM at peak ripeness" }
+                ]
+            },
+            // More products...
+        ];
+
+        // Shopping cart
+        let cart = [];
+
+        // Load products
+        function loadProducts() {
+            // In a real app, this would fetch from your API/blockchain
+            console.log("Products loaded");
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Connect wallet
+            document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
+            
+            // View product details
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('view-details')) {
+                    const productId = e.target.dataset.id;
+                    showProductDetails(productId);
+                }
+                
+                // Add to cart
+                if (e.target.classList.contains('add-to-cart')) {
+                    const productId = e.target.dataset.id;
+                    addToCart(productId);
+                }
+            });
+            
+            // Checkout
+            document.getElementById('checkoutBtn').addEventListener('click', checkout);
+        }
+
+        // Show product details modal
+        function showProductDetails(productId) {
+            const product = products.find(p => p.id == productId);
+            const modal = new bootstrap.Modal(document.getElementById('productModal'));
+            
+            document.getElementById('productModalContent').innerHTML = `
+                <div class="modal-header">
+                    <h5 class="modal-title">${product.name}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img src="${product.image}" class="img-fluid rounded mb-3" alt="${product.name}">
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                ${product.certifications.map(cert => `<span class="badge bg-success">${cert}</span>`).join('')}
+                            </div>
+                            <h5 class="text-success">$${product.price}/${product.unit}</h5>
+                            <p>${product.description}</p>
+                            
+                            <div class="d-flex align-items-center mb-4">
+                                <img src="farm-${product.id}.jpg" class="rounded-circle me-3" width="50" alt="${product.farm}">
+                                <div>
+                                    <h6 class="mb-0">${product.farm}</h6>
+                                    <small class="text-muted">${product.distance} away</small>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group mb-3" style="max-width: 200px;">
+                                <button class="btn btn-outline-secondary decrease-qty" type="button">-</button>
+                                <input type="text" class="form-control text-center" value="1" id="productQty">
+                                <button class="btn btn-outline-secondary increase-qty" type="button">+</button>
+                            </div>
+                            
+                            <button class="btn btn-success btn-lg w-100 add-to-cart" data-id="${product.id}">
+                                <i class="fas fa-cart-plus me-2"></i> Add to Cart
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Product Journey</h5>
+                            <div class="timeline">
+                                ${product.journey.map(step => `
+                                    <div class="timeline-item">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-${getStepIcon(step.step)}"></i>
+                                        </div>
+                                        <div class="timeline-content bg-light p-3 rounded">
+                                            <h6>${step.step}</h6>
+                                            <p class="text-muted small mb-0">${step.date} • ${step.details}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <div class="card mt-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0">Blockchain Verification</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Product Authenticity</span>
+                                        <span class="badge bg-success">Verified</span>
+                                    </div>
+                                    <div class="progress mb-3" style="height: 6px;">
+                                        <div class="progress-bar bg-success" style="width: 100%"></div>
+                                    </div>
+                                    <button class="btn btn-outline-primary w-100" onclick="verifyOnBlockchain(${product.id})">
+                                        <i class="fas fa-link me-2"></i> View Blockchain Record
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.show();
+        }
+
+        // Helper function for timeline icons
+        function getStepIcon(step) {
+            const icons = {
+                'Planted': 'seedling',
+                'Irrigation': 'tint',
+                'Harvested': 'hand-paper',
+                'Shipped': 'truck',
+                'Stored': 'warehouse'
+            };
+            return icons[step] || 'check-circle';
+        }
+
+        // Add to cart
+        function addToCart(productId) {
+            const product = products.find(p => p.id == productId);
+            const existingItem = cart.find(item => item.id == productId);
+            const quantity = document.getElementById('productQty') ? 
+                parseInt(document.getElementById('productQty').value) : 1;
+            
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({
+                    ...product,
+                    quantity: quantity
+                });
+            }
+            
+            updateCartUI();
+            showToast(`${product.name} added to cart`);
+        }
+
+        // Update cart UI
+        function updateCartUI() {
+            const cartCount = document.getElementById('cartCount');
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            
+            // Update cart count
+            cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+            
+            // Update cart items
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <p>Your cart is empty</p>
+                    </div>
+                `;
+                document.getElementById('checkoutBtn').disabled = true;
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <img src="${item.image}" width="60" class="rounded me-3" alt="${item.name}">
+                            <div>
+                                <h6 class="mb-0">${item.name}</h6>
+                                <small class="text-muted">${item.farm}</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-sm btn-outline-secondary decrease-item" data-id="${item.id}">-</button>
+                                <span class="mx-2">${item.quantity}</span>
+                                <button class="btn btn-sm btn-outline-secondary increase-item" data-id="${item.id}">+</button>
+                            </div>
+                            <div class="mt-1">$${(item.price * item.quantity).toFixed(2)}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Calculate total
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                cartTotal.textContent = `$${total.toFixed(2)}`;
+                document.getElementById('checkoutBtn').disabled = false;
+            }
+        }
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                if (window.ethereum) {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const walletBtn = document.getElementById('connectWalletBtn');
+                    
+                    walletBtn.innerHTML = `
+                        <i class="fas fa-check-circle me-1"></i>
+                        ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}
+                    `;
+                    walletBtn.classList.remove('btn-outline-success');
+                    walletBtn.classList.add('btn-success');
+                    
+                    showToast('Wallet connected successfully');
+                } else {
+                    showToast('Please install MetaMask', 'error');
+                }
+            } catch (error) {
+                console.error('Wallet connection failed:', error);
+                showToast('Wallet connection failed', 'error');
+            }
+        }
+
+        // Verify product on blockchain
+        async function verifyOnBlockchain(productId) {
+            try {
+                // In a real app, this would query your smart contract
+                const contract = new web3.eth.Contract(abi, contractAddress);
+                const productInfo = await contract.methods.getProduct(productId).call();
+                
+                console.log('Blockchain verification:', productInfo);
+                showToast('Product verified on blockchain');
+            } catch (error) {
+                console.error('Verification failed:', error);
+                showToast('Verification failed', 'error');
+            }
+        }
+
+        // Checkout process
+        async function checkout() {
+            if (cart.length === 0) return;
+            
+            try {
+                // In a real app, this would process payment via smart contract
+                const contract = new web3.eth.Contract(abi, contractAddress);
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                
+                await contract.methods.createOrder(
+                    cart.map(item => item.id),
+                    cart.map(item => item.quantity),
+                    Math.floor(total * 100) // Convert to cents
+                ).send({ from: userAddress });
+                
+                showToast('Order placed successfully!');
+                cart = [];
+                updateCartUI();
+                $('#cartModal').modal('hide');
+            } catch (error) {
+                console.error('Checkout failed:', error);
+                showToast('Checkout failed', 'error');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            const toastContainer = document.getElementById('toastContainer') || document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.style.position = 'fixed';
+            toastContainer.style.bottom = '20px';
+            toastContainer.style.right = '20px';
+            toastContainer.style.zIndex = '1100';
+            toastContainer.appendChild(toast);
+            document.body.appendChild(toastContainer);
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+    </script>
+</body>
+</html>
