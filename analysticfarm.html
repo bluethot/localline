@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard | FarmChain Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+            --sidebar-width: 280px;
+        }
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--primary-green) 100%);
+            width: var(--sidebar-width);
+            min-height: 100vh;
+            position: fixed;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            padding: 10px 15px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+        }
+        .stat-card {
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .chart-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-container {
+            position: relative;
+            flex-grow: 1;
+            min-height: 300px;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #6c757d;
+        }
+        .search-box input {
+            padding-left: 40px;
+        }
+        .filter-dropdown .dropdown-menu {
+            width: 300px;
+            padding: 15px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        #topProductsTable th {
+            white-space: nowrap;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+        .progress-lg {
+            height: 1rem;
+        }
+        .progress-bar-animated {
+            animation: progress-bar-stripes 1s linear infinite;
+        }
+        .metric-card {
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .metric-card-header {
+            padding: 15px;
+            color: white;
+            font-weight: 600;
+        }
+        .metric-card-body {
+            padding: 20px;
+            background: white;
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .metric-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        .metric-change {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .positive {
+            color: #28a745;
+        }
+        .negative {
+            color: #dc3545;
+        }
+        .map-container {
+            height: 100%;
+            min-height: 300px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+        .legend {
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar text-white p-0">
+            <div class="p-3">
+                <h4 class="text-center mb-4">
+                    <i class="fas fa-leaf me-2"></i>FarmChain
+                </h4>
+                <hr class="bg-light">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="farmer-verification.html">
+                            <i class="fas fa-user-check"></i> Farmer Verification
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="productmoderation.html">
+                            <i class="fas fa-apple-alt"></i> Product Moderation
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="ordermanagement.html">
+                            <i class="fas fa-shopping-bag"></i> Order Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="disputes.html">
+                            <i class="fas fa-exclamation-triangle"></i> Disputes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="analytics.html">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="settings.html">
+                            <i class="fas fa-cog"></i> System Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="container-fluid px-4 py-4">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h3 mb-0">Analytics Dashboard</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Analytics</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div>
+                        <div class="input-group">
+                            <input type="text" class="form-control date-range" placeholder="Select date range">
+                            <button class="btn btn-success">
+                                <i class="fas fa-sync-alt me-1"></i>Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="row mb-4">
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="metric-card">
+                            <div class="metric-card-header bg-primary">
+                                <i class="fas fa-dollar-sign me-2"></i>Total Revenue
+                            </div>
+                            <div class="metric-card-body">
+                                <div class="metric-value">$24,589</div>
+                                <div class="metric-label">Last 30 Days</div>
+                                <div class="metric-change positive">
+                                    <i class="fas fa-arrow-up me-1"></i> 12.5% from last month
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="metric-card">
+                            <div class="metric-card-header bg-success">
+                                <i class="fas fa-shopping-bag me-2"></i>Total Orders
+                            </div>
+                            <div class="metric-card-body">
+                                <div class="metric-value">428</div>
+                                <div class="metric-label">Last 30 Days</div>
+                                <div class="metric-change positive">
+                                    <i class="fas fa-arrow-up me-1"></i> 8.3% from last month
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="metric-card">
+                            <div class="metric-card-header bg-warning">
+                                <i class="fas fa-users me-2"></i>New Customers
+                            </div>
+                            <div class="metric-card-body">
+                                <div class="metric-value">147</div>
+                                <div class="metric-label">Last 30 Days</div>
+                                <div class="metric-change positive">
+                                    <i class="fas fa-arrow-up me-1"></i> 5.7% from last month
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="metric-card">
+                            <div class="metric-card-header bg-info">
+                                <i class="fas fa-tractor me-2"></i>Active Farmers
+                            </div>
+                            <div class="metric-card-body">
+                                <div class="metric-value">86</div>
+                                <div class="metric-label">Currently Selling</div>
+                                <div class="metric-change positive">
+                                    <i class="fas fa-arrow-up me-1"></i> 4.9% from last month
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row 1 -->
+                <div class="row mb-4">
+                    <div class="col-lg-8 mb-4">
+                        <div class="card chart-card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Revenue Overview</h5>
+                                <div>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-secondary active">Daily</button>
+                                        <button type="button" class="btn btn-outline-secondary">Weekly</button>
+                                        <button type="button" class="btn btn-outline-secondary">Monthly</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="revenueChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-4">
+                        <div class="card chart-card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Sales by Category</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="categoryChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row 2 -->
+                <div class="row mb-4">
+                    <div class="col-lg-6 mb-4">
+                        <div class="card chart-card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Customer Acquisition</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="customerChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card chart-card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Order Fulfillment</h5>
+                                <div class="legend">
+                                    <div class="legend-item">
+                                        <div class="legend-color bg-success"></div>
+                                        <span>On Time</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color bg-warning"></div>
+                                        <span>Delayed</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color bg-danger"></div>
+                                        <span>Cancelled</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="fulfillmentChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maps and Geography -->
+                <div class="row mb-4">
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Customer Locations</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="map-container">
+                                    <div class="map-placeholder">
+                                        <div class="text-center">
+                                            <i class="fas fa-map-marked-alt fa-3x mb-3"></i>
+                                            <p>Customer geographic distribution map</p>
+                                            <small class="text-muted">Interactive map would display here</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Farm Distribution</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="map-container">
+                                    <div class="map-placeholder">
+                                        <div class="text-center">
+                                            <i class="fas fa-tractor fa-3x mb-3"></i>
+                                            <p>Farm locations and production volume</p>
+                                            <small class="text-muted">Interactive map would display here</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Products and Farmers -->
+                <div class="row">
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Top Selling Products</h5>
+                                <button class="btn btn-sm btn-outline-secondary">View All</button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="topProductsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Category</th>
+                                                <th>Sales</th>
+                                                <th>Revenue</th>
+                                                <th>% of Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Organic Tomatoes</td>
+                                                <td>Vegetables</td>
+                                                <td>142</td>
+                                                <td>$1,245</td>
+                                                <td>
+                                                    <div class="progress progress-lg">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 28%" aria-valuenow="28" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Honeycrisp Apples</td>
+                                                <td>Fruits</td>
+                                                <td>98</td>
+                                                <td>$876</td>
+                                                <td>
+                                                    <div class="progress progress-lg">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 19%" aria-valuenow="19" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Grass-Fed Beef</td>
+                                                <td>Meat</td>
+                                                <td>76</td>
+                                                <td>$2,145</td>
+                                                <td>
+                                                    <div class="progress progress-lg">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 45%" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <!-- More rows... -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Top Performing Farmers</h5>
+                                <button class="btn btn-sm btn-outline-secondary">View All</button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Farm</th>
+                                                <th>Products</th>
+                                                <th>Orders</th>
+                                                <th>Rating</th>
+                                                <th>Revenue</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Green Valley Organics</td>
+                                                <td>12</td>
+                                                <td>87</td>
+                                                <td>
+                                                    <span class="text-warning">
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star-half-alt"></i>
+                                                    </span>
+                                                    4.5
+                                                </td>
+                                                <td>$3,456</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Sunny Acres Farm</td>
+                                                <td>8</td>
+                                                <td>65</td>
+                                                <td>
+                                                    <span class="text-warning">
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                    </span>
+                                                    5.0
+                                                </td>
+                                                <td>$2,987</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Pasture Prime</td>
+                                                <td>5</td>
+                                                <td>42</td>
+                                                <td>
+                                                    <span class="text-warning">
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="far fa-star"></i>
+                                                    </span>
+                                                    4.0
+                                                </td>
+                                                <td>$2,145</td>
+                                            </tr>
+                                            <!-- More rows... -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#topProductsTable').DataTable({
+                responsive: true,
+                dom: '<"top"f>rt<"bottom"lip><"clear">',
+                pageLength: 5,
+                ordering: false,
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search products...",
+                    lengthMenu: "Show _MENU_ entries per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    infoEmpty: "No entries found",
+                    infoFiltered: "(filtered from _MAX_ total entries)"
+                }
+            });
+
+            // Initialize date range picker
+            flatpickr(".date-range", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                defaultDate: ["2023-05-15", "2023-06-15"]
+            });
+
+            // Initialize charts
+            setupCharts();
+        });
+
+        // Setup charts
+        function setupCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jun 1', 'Jun 2', 'Jun 3', 'Jun 4', 'Jun 5', 'Jun 6', 'Jun 7', 'Jun 8', 'Jun 9', 'Jun 10', 'Jun 11', 'Jun 12', 'Jun 13', 'Jun 14', 'Jun 15'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [450, 520, 480, 610, 590, 680, 720, 650, 690, 810, 790, 850, 920, 880, 950],
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Vegetables', 'Fruits', 'Meat', 'Dairy', 'Grains', 'Other'],
+                    datasets: [{
+                        data: [28, 22, 25, 12, 8, 5],
+                        backgroundColor: [
+                            '#4CAF50',
+                            '#8BC34A',
+                            '#FF9800',
+                            '#2196F3',
+                            '#795548',
+                            '#9E9E9E'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${percentage}% ($${(value * 10).toLocaleString()})`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Customer Chart
+            const customerCtx = document.getElementById('customerChart').getContext('2d');
+            new Chart(customerCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'New Customers',
+                            data: [85, 92, 104, 121, 132, 142],
+                            backgroundColor: '#4CAF50',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Returning Customers',
+                            data: [120, 135, 150, 165, 180, 195],
+                            backgroundColor: '#2196F3',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Fulfillment Chart
+            const fulfillmentCtx = document.getElementById('fulfillmentChart').getContext('2d');
+            new Chart(fulfillmentCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'On Time',
+                            data: [120, 135, 150, 165, 180, 195],
+                            backgroundColor: '#28A745',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Delayed',
+                            data: [15, 12, 8, 10, 5, 3],
+                            backgroundColor: '#FFC107',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Cancelled',
+                            data: [5, 3, 2, 5, 5, 2],
+                            backgroundColor: '#DC3545',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            stacked: true,
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

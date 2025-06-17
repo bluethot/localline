@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmChain - Product Management</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+        }
+        .sidebar {
+            height: 100vh;
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--primary-green) 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 8px;
+        }
+        .stat-card {
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .product-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        .verification-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        /* Product card enhancements */
+        .product-card .card-img-top {
+            transition: transform 0.3s ease;
+            height: 180px;
+            object-fit: cover;
+        }
+        .product-card:hover .card-img-top {
+            transform: scale(1.03);
+        }
+        /* Certification badges */
+        .badge.bg-success {
+            background-color: var(--primary-green) !important;
+        }
+        /* Carousel styling */
+        .carousel-inner {
+            border-radius: 0.375rem;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .product-card {
+                margin-bottom: 1.5rem;
+            }
+            #productDetailsModal .col-md-6 {
+                margin-bottom: 1.5rem;
+            }
+        }
+        .product-title-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar text-white p-0">
+                <div class="p-3">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-leaf me-2"></i>FarmChain
+                    </h4>
+                    <hr class="bg-light">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="product.html">
+                                <i class="fas fa-apple-alt"></i> Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#orders">
+                                <i class="fas fa-shopping-bag"></i> Orders
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#inventory">
+                                <i class="fas fa-boxes"></i> Inventory
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#analytics">
+                                <i class="fas fa-chart-line"></i> Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#farm-profile">
+                                <i class="fas fa-tractor"></i> Farm Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#payments">
+                                <i class="fas fa-wallet"></i> Payments
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Top Bar -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Product Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="connectWalletBtn">
+                                <i class="fas fa-wallet me-1"></i>
+                                <span id="walletStatus">Connect Wallet</span>
+                            </button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i> Sunny Acres Farm
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Sign out</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Management Content -->
+                <div class="row mb-4">
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Products</h6>
+                                        <h3 class="mb-0" id="totalProducts">14</h3>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-apple-alt text-primary"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 2 new this month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Active Listings</h6>
+                                        <h3 class="mb-0" id="activeProducts">12</h3>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 3 more than last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Low Stock</h6>
+                                        <h3 class="mb-0" id="lowStockProducts">3</h3>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                                    </div>
+                                </div>
+                                <p class="text-danger small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> Needs attention
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Avg. Rating</h6>
+                                        <h3 class="mb-0">4.8</h3>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-star text-info"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 92% positive reviews
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Section -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Your Products</h5>
+                        <div>
+                            <button class="btn btn-sm btn-success me-2" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                <i class="fas fa-plus me-1"></i> Add Product
+                            </button>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-filter me-1"></i> Filter
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" onclick="filterProducts('all')">All Products</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterProducts('active')">Active</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterProducts('low-stock')">Low Stock</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterProducts('organic')">Organic</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterProducts('drafts')">Drafts</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4" id="farmerProducts">
+                            <!-- Products will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Performance -->
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Product Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <canvas id="productSalesChart" height="250"></canvas>
+                            </div>
+                            <div class="col-md-4">
+                                <h6>Top Performing Products</h6>
+                                <div class="list-group">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Organic Strawberries</span>
+                                        <span class="badge bg-success">$1,245</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Free-Range Eggs</span>
+                                        <span class="badge bg-success">$856</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Heirloom Tomatoes</span>
+                                        <span class="badge bg-success">$672</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Raw Honey</span>
+                                        <span class="badge bg-success">$489</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>Artisan Cheese</span>
+                                        <span class="badge bg-success">$312</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Product Name</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" required>
+                                    <option value="">Select category</option>
+                                    <option>Vegetables</option>
+                                    <option>Fruits</option>
+                                    <option>Dairy</option>
+                                    <option>Meat</option>
+                                    <option>Grains</option>
+                                    <option>Herbs</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Price ($)</label>
+                                <input type="number" step="0.01" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Unit</label>
+                                <select class="form-select" required>
+                                    <option>lbs</option>
+                                    <option>kg</option>
+                                    <option>units</option>
+                                    <option>dozen</option>
+                                    <option>bunch</option>
+                                    <option>gallon</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" rows="3" placeholder="Describe your product in detail..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Product Images</label>
+                                <input type="file" class="form-control" accept="image/*" multiple>
+                                <div class="form-text">Upload high-quality images of your product (max 5 images)</div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Certifications</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="organicCheck">
+                                        <label class="form-check-label" for="organicCheck">Organic</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="gmoCheck">
+                                        <label class="form-check-label" for="gmoCheck">Non-GMO</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="fairtradeCheck">
+                                        <label class="form-check-label" for="fairtradeCheck">Fair Trade</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="localCheck">
+                                        <label class="form-check-label" for="localCheck">Locally Grown</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="sustainableCheck">
+                                        <label class="form-check-label" for="sustainableCheck">Sustainable</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Harvest Date</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Expiration Date</label>
+                                <input type="date" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-seedling me-2"></i> Mint Product NFT
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Details Modal -->
+    <div class="modal fade" id="productDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productDetailsTitle">Product Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div id="productImagesCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner rounded" id="productImagesContainer">
+                                    <!-- Images will be loaded here -->
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#productImagesCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#productImagesCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 id="productDetailName" class="mb-3"></h4>
+                            <div class="d-flex align-items-center mb-3">
+                                <h3 class="text-success mb-0 me-2" id="productDetailPrice"></h3>
+                                <span class="text-muted" id="productDetailUnit"></span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="badge bg-success me-2" id="productDetailStock"></span>
+                                <span class="text-muted small">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    <span id="productDetailHarvestDate"></span>
+                                </span>
+                            </div>
+                            <div class="mb-3" id="productDetailCertifications">
+                                <!-- Certifications badges will be loaded here -->
+                            </div>
+                            <p class="mb-4" id="productDetailDescription"></p>
+                            <div class="d-flex flex-wrap gap-2 mb-4">
+                                <button class="btn btn-success" id="editProductBtn">
+                                    <i class="fas fa-pencil-alt me-1"></i> Update Product
+                                </button>
+                                <button class="btn btn-outline-secondary">
+                                    <i class="fas fa-chart-line me-1"></i> View Analytics
+                                </button>
+                            </div>
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Blockchain Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row small">
+                                        <div class="col-6">
+                                            <p class="mb-1"><strong>NFT ID:</strong></p>
+                                            <p class="mb-1"><strong>Token Standard:</strong></p>
+                                            <p class="mb-1"><strong>Contract Address:</strong></p>
+                                            <p class="mb-1"><strong>Token URI:</strong></p>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <p class="mb-1 text-truncate" id="productNFTId">FC-12345</p>
+                                            <p class="mb-1">ERC-721</p>
+                                            <p class="mb-1 text-truncate">0x89d24...3a4b1</p>
+                                            <p class="mb-1 text-truncate">ipfs://QmXyZ...</p>
+                                        </div>
+                                    </div>
+                                    <a href="#" class="btn btn-sm btn-outline-primary mt-2">
+                                        <i class="fas fa-external-link-alt me-1"></i> View on Explorer
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Initialize product page when DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProductData();
+            setupProductCharts();
+            setupEventListeners();
+        });
+
+        // Sample product data
+        const sampleProducts = [
+            {
+                id: 1,
+                name: "Organic Strawberries",
+                price: 4.99,
+                unit: "lb",
+                stock: 28,
+                images: ["strawberries.jpg", "strawberries2.jpg"],
+                harvestDate: "2023-06-05",
+                description: "Fresh organic strawberries harvested at peak ripeness. Grown without synthetic pesticides or fertilizers.",
+                organic: true,
+                nonGMO: true,
+                local: true,
+                status: "active",
+                nftId: "FC-12345"
+            },
+            {
+                id: 2,
+                name: "Free-Range Eggs",
+                price: 5.50,
+                unit: "dozen",
+                stock: 42,
+                images: ["eggs.jpg"],
+                harvestDate: "2023-06-03",
+                description: "Farm-fresh eggs from free-range chickens. Our hens roam freely and eat a natural diet.",
+                organic: true,
+                nonGMO: true,
+                local: false,
+                status: "active",
+                nftId: "FC-12346"
+            },
+            {
+                id: 3,
+                name: "Heirloom Tomatoes",
+                price: 3.75,
+                unit: "lb",
+                stock: 5,
+                images: ["tomatoes.jpg"],
+                harvestDate: "2023-06-08",
+                description: "Variety of heirloom tomatoes with rich flavor and vibrant colors. Grown from heritage seeds.",
+                organic: false,
+                nonGMO: true,
+                local: true,
+                status: "low-stock",
+                nftId: "FC-12347"
+            },
+            {
+                id: 4,
+                name: "Raw Honey",
+                price: 12.99,
+                unit: "jar",
+                stock: 15,
+                images: ["honey.jpg"],
+                harvestDate: "2023-05-15",
+                description: "Pure, unfiltered honey from our own beehives. No additives or processing.",
+                organic: true,
+                nonGMO: true,
+                local: true,
+                status: "active",
+                nftId: "FC-12348"
+            }
+        ];
+
+        // Current product being viewed/edited
+        let currentProduct = null;
+
+        // Load product data
+        async function loadProductData() {
+            // In a real app, this would come from your API/blockchain
+            renderFarmerProducts(sampleProducts);
+            updateProductStats(sampleProducts);
+        }
+
+        // Render farmer's products
+        function renderFarmerProducts(products) {
+            const productsContainer = document.getElementById('farmerProducts');
+            productsContainer.innerHTML = '';
+
+            products.forEach(product => {
+                const productCol = document.createElement('div');
+                productCol.className = 'col-md-6 col-lg-4 col-xl-3';
+                productCol.innerHTML = `
+                    <div class="card product-card h-100">
+                        <div class="position-relative">
+                            <img src="assets/${product.images[0]}" class="card-img-top" alt="${product.name}">
+                            ${product.status === 'active' ? 
+                                '<span class="verification-badge"><i class="fas fa-check-circle me-1"></i>Verified</span>' : 
+                                product.status === 'low-stock' ?
+                                '<span class="verification-badge bg-warning"><i class="fas fa-exclamation-circle me-1"></i>Low Stock</span>' :
+                                '<span class="verification-badge bg-secondary"><i class="fas fa-clock me-1"></i>Pending</span>'
+                            }
+                            <div class="product-title-overlay">
+                                <h5 class="card-title text-white mb-0">${product.name}</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-success fw-bold">$${product.price}/${product.unit}</span>
+                                <span class="badge ${product.stock > 10 ? 'bg-success' : 'bg-warning'}">
+                                    ${product.stock} in stock
+                                </span>
+                            </div>
+                            <p class="text-muted small mb-3">
+                                <i class="fas fa-calendar-alt me-1"></i> 
+                                Harvested: ${new Date(product.harvestDate).toLocaleDateString()}
+                            </p>
+                            <div class="d-flex flex-wrap gap-1 mb-3">
+                                ${product.organic ? '<span class="badge bg-success">Organic</span>' : ''}
+                                ${product.nonGMO ? '<span class="badge bg-info text-dark">Non-GMO</span>' : ''}
+                                ${product.local ? '<span class="badge bg-primary">Local</span>' : ''}
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewProductDetails(${product.id})">
+                                    <i class="fas fa-eye me-1"></i> View
+                                </button>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="editProduct(${product.id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${product.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productsContainer.appendChild(productCol);
+            });
+        }
+
+        // Update product statistics
+        function updateProductStats(products) {
+            document.getElementById('totalProducts').textContent = products.length;
+            document.getElementById('activeProducts').textContent = products.filter(p => p.status === 'active').length;
+            document.getElementById('lowStockProducts').textContent = products.filter(p => p.stock < 10).length;
+        }
+
+        // Filter products
+        function filterProducts(filterType) {
+            let filteredProducts = [...sampleProducts];
+            
+            switch(filterType) {
+                case 'active':
+                    filteredProducts = filteredProducts.filter(p => p.status === 'active');
+                    break;
+                case 'low-stock':
+                    filteredProducts = filteredProducts.filter(p => p.stock < 10);
+                    break;
+                case 'organic':
+                    filteredProducts = filteredProducts.filter(p => p.organic);
+                    break;
+                case 'drafts':
+                    filteredProducts = filteredProducts.filter(p => p.status === 'draft');
+                    break;
+                // 'all' shows all products
+            }
+            
+            renderFarmerProducts(filteredProducts);
+        }
+
+        // View product details
+        function viewProductDetails(productId) {
+            currentProduct = sampleProducts.find(p => p.id === productId);
+            if (!currentProduct) return;
+            
+            // Set modal title
+            document.getElementById('productDetailsTitle').textContent = currentProduct.name;
+            
+            // Set product details
+            document.getElementById('productDetailName').textContent = currentProduct.name;
+            document.getElementById('productDetailPrice').textContent = `$${currentProduct.price}`;
+            document.getElementById('productDetailUnit').textContent = `per ${currentProduct.unit}`;
+            document.getElementById('productDetailStock').textContent = `${currentProduct.stock} in stock`;
+            document.getElementById('productDetailHarvestDate').textContent = new Date(currentProduct.harvestDate).toLocaleDateString();
+            document.getElementById('productDetailDescription').textContent = currentProduct.description;
+            document.getElementById('productNFTId').textContent = currentProduct.nftId;
+            
+            // Set certifications
+            const certsContainer = document.getElementById('productDetailCertifications');
+            certsContainer.innerHTML = '';
+            if (currentProduct.organic) certsContainer.innerHTML += '<span class="badge bg-success me-1">Organic</span>';
+            if (currentProduct.nonGMO) certsContainer.innerHTML += '<span class="badge bg-info text-dark me-1">Non-GMO</span>';
+            if (currentProduct.local) certsContainer.innerHTML += '<span class="badge bg-primary me-1">Local</span>';
+            
+            // Set images
+            const imagesContainer = document.getElementById('productImagesContainer');
+            imagesContainer.innerHTML = '';
+            currentProduct.images.forEach((img, index) => {
+                const item = document.createElement('div');
+                item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                item.innerHTML = `<img src="assets/${img}" class="d-block w-100" alt="${currentProduct.name}">`;
+                imagesContainer.appendChild(item);
+            });
+            
+            // Set edit button to use current product ID
+            document.getElementById('editProductBtn').setAttribute('onclick', `editProduct(${currentProduct.id})`);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('productDetailsModal'));
+            modal.show();
+        }
+
+        // Edit product
+        function editProduct(productId) {
+            currentProduct = sampleProducts.find(p => p.id === productId);
+            if (!currentProduct) return;
+            
+            // Populate the add product form with existing data
+            const form = document.getElementById('productForm');
+            form.querySelector('input[type="text"]').value = currentProduct.name;
+            form.querySelector('select').value = "Fruits"; // In real app, set correct category
+            form.querySelector('input[type="number"]').value = currentProduct.price;
+            form.querySelector('input[type="number"]:nth-of-type(2)').value = currentProduct.stock;
+            form.querySelector('textarea').value = currentProduct.description;
+            form.querySelector('input[type="date"]').value = currentProduct.harvestDate;
+            
+            // Set unit select
+            const unitSelect = form.querySelectorAll('select')[1];
+            unitSelect.value = currentProduct.unit;
+            
+            // Set checkboxes
+            document.getElementById('organicCheck').checked = currentProduct.organic;
+            document.getElementById('gmoCheck').checked = currentProduct.nonGMO;
+            document.getElementById('localCheck').checked = currentProduct.local;
+            
+            // Change modal title and button text
+            document.querySelector('#addProductModal .modal-title').textContent = 'Edit Product';
+            document.querySelector('#addProductModal .btn-success').innerHTML = '<i class="fas fa-save me-2"></i> Save Changes';
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('addProductModal'));
+            modal.show();
+            
+            // Close details modal if open
+            const detailsModal = bootstrap.Modal.getInstance(document.getElementById('productDetailsModal'));
+            if (detailsModal) detailsModal.hide();
+        }
+
+        // Delete product
+        function deleteProduct(productId) {
+            if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+                // In a real app, you would call your API/blockchain to delete
+                console.log(`Deleting product ${productId}`);
+                
+                // Remove from sample data (in real app, this would be handled by backend)
+                const index = sampleProducts.findIndex(p => p.id === productId);
+                if (index !== -1) {
+                    sampleProducts.splice(index, 1);
+                    renderFarmerProducts(sampleProducts);
+                    updateProductStats(sampleProducts);
+                }
+                
+                alert('Product deleted successfully');
+            }
+        }
+
+        // Setup product performance charts
+        function setupProductCharts() {
+            // Product Sales Chart
+            const salesCtx = document.getElementById('productSalesChart').getContext('2d');
+            new Chart(salesCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Product Sales',
+                        data: [450, 600, 750, 900, 1100, 1300],
+                        backgroundColor: '#4CAF50',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Connect wallet
+            document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
+
+            // Form submission
+            document.getElementById('productForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (currentProduct) {
+                    // Update existing product
+                    alert('Product updated successfully');
+                } else {
+                    // Add new product
+                    alert('New product will be minted as NFT and added to marketplace');
+                }
+                
+                $('#addProductModal').modal('hide');
+                currentProduct = null;
+                
+                // Reset form title and button
+                document.querySelector('#addProductModal .modal-title').textContent = 'Add New Product';
+                document.querySelector('#addProductModal .btn-success').innerHTML = '<i class="fas fa-seedling me-2"></i> Mint Product NFT';
+            });
+        }
+
+        // Connect wallet function
+        async function connectWallet() {
+            try {
+                if (window.ethereum) {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const walletBtn = document.getElementById('connectWalletBtn');
+                    const walletStatus = document.getElementById('walletStatus');
+                    
+                    walletBtn.classList.remove('btn-outline-secondary');
+                    walletBtn.classList.add('btn-success');
+                    walletStatus.innerHTML = `${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}`;
+                    
+                    // Load farmer data from blockchain
+                    loadFarmerData(accounts[0]);
+                } else {
+                    alert('Please install MetaMask!');
+                }
+            } catch (error) {
+                console.error('Wallet connection failed:', error);
+            }
+        }
+
+        // Load farmer data from blockchain
+        async function loadFarmerData(walletAddress) {
+            // In a real app, you would query your smart contract
+            console.log(`Loading data for farmer: ${walletAddress}`);
+        }
+    </script>
+</body>
+</html>

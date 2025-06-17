@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer Verification | LocalHarvestLine Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+            --sidebar-width: 280px;
+        }
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--primary-green) 100%);
+            width: var(--sidebar-width);
+            min-height: 100vh;
+            position: fixed;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            padding: 10px 15px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+        }
+        .verification-card {
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .verification-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-pending {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+        .status-approved {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+        .status-rejected {
+            background-color: #F8D7DA;
+            color: #721C24;
+        }
+        .document-preview {
+            height: 200px;
+            background-color: #f8f9fa;
+            border: 1px dashed #dee2e6;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .document-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .verification-steps {
+            position: relative;
+            padding-left: 30px;
+        }
+        .verification-steps::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        .verification-step {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .verification-step::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #adb5bd;
+            border: 3px solid #e9ecef;
+        }
+        .verification-step.completed::before {
+            background-color: var(--primary-green);
+            border-color: #D4EDDA;
+        }
+        .verification-step.active::before {
+            background-color: #FFC107;
+            border-color: #FFF3CD;
+        }
+        .verification-step h6 {
+            font-weight: 600;
+        }
+        .verification-step p {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        .action-btns .btn {
+            min-width: 100px;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #6c757d;
+        }
+        .search-box input {
+            padding-left: 40px;
+        }
+        .filter-dropdown .dropdown-menu {
+            width: 300px;
+            padding: 15px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        #verificationsTable th {
+            white-space: nowrap;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar text-white p-0">
+            <div class="p-3">
+                <h4 class="text-center mb-4">
+                    <i class="fas fa-leaf me-2"></i>FarmChain
+                </h4>
+                <hr class="bg-light">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="farmer-verification.html">
+                            <i class="fas fa-user-check"></i> Farmer Verification
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="product-moderation.html">
+                            <i class="fas fa-apple-alt"></i> Product Moderation
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="order-management.html">
+                            <i class="fas fa-shopping-bag"></i> Order Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="disputes.html">
+                            <i class="fas fa-exclamation-triangle"></i> Disputes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="analytics.html">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="settings.html">
+                            <i class="fas fa-cog"></i> System Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="container-fluid px-4 py-4">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h3 mb-0">Farmer Verification</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Farmer Verification</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newVerificationModal">
+                            <i class="fas fa-plus me-2"></i>New Verification
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card verification-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Applications</h6>
+                                        <h3 class="mb-0">187</h3>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-file-alt text-primary"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 8% from last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card verification-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Pending Review</h6>
+                                        <h3 class="mb-0">23</h3>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-clock text-warning"></i>
+                                    </div>
+                                </div>
+                                <p class="text-danger small mt-2 mb-0">
+                                    <i class="fas fa-exclamation-circle me-1"></i> Needs attention
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card verification-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Approved Farmers</h6>
+                                        <h3 class="mb-0">142</h3>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 12% from last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card verification-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Rejected Applications</h6>
+                                        <h3 class="mb-0">22</h3>
+                                    </div>
+                                    <div class="bg-danger bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                    </div>
+                                </div>
+                                <p class="text-muted small mt-2 mb-0">
+                                    <i class="fas fa-arrow-down me-1"></i> 3% from last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters and Search -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" class="form-control" placeholder="Search farmers by name, location or ID..." id="searchInput">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex">
+                                    <div class="filter-dropdown me-2">
+                                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-filter me-2"></i>Filters
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                                            <h6 class="dropdown-header">Filter Options</h6>
+                                            <div class="mb-3">
+                                                <label class="form-label">Status</label>
+                                                <select class="form-select" id="statusFilter">
+                                                    <option value="">All Statuses</option>
+                                                    <option value="pending">Pending</option>
+                                                    <option value="approved">Approved</option>
+                                                    <option value="rejected">Rejected</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Date Range</label>
+                                                <select class="form-select" id="dateFilter">
+                                                    <option value="">All Time</option>
+                                                    <option value="today">Today</option>
+                                                    <option value="week">This Week</option>
+                                                    <option value="month">This Month</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Farm Size</label>
+                                                <select class="form-select" id="sizeFilter">
+                                                    <option value="">Any Size</option>
+                                                    <option value="small">Small (< 10 acres)</option>
+                                                    <option value="medium">Medium (10-50 acres)</option>
+                                                    <option value="large">Large (> 50 acres)</option>
+                                                </select>
+                                            </div>
+                                            <button class="btn btn-sm btn-success w-100">Apply Filters</button>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline-secondary" id="exportBtn">
+                                        <i class="fas fa-download me-2"></i>Export
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verifications Table -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="verificationsTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Farm Name</th>
+                                        <th>Farmer</th>
+                                        <th>Location</th>
+                                        <th>Farm Size</th>
+                                        <th>Applied On</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>FV-1001</td>
+                                        <td>Green Valley Organics</td>
+                                        <td>John Farmer</td>
+                                        <td>Salinas, CA</td>
+                                        <td>120 acres</td>
+                                        <td>2023-06-10</td>
+                                        <td><span class="status-badge status-pending">Pending</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1 view-details" data-bs-toggle="modal" data-bs-target="#verificationModal">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success me-1 approve-btn">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger reject-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>FV-1002</td>
+                                        <td>Sunny Acres Farm</td>
+                                        <td>Sarah Grower</td>
+                                        <td>Fresno, CA</td>
+                                        <td>45 acres</td>
+                                        <td>2023-06-08</td>
+                                        <td><span class="status-badge status-approved">Approved</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1 view-details" data-bs-toggle="modal" data-bs-target="#verificationModal">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>FV-1003</td>
+                                        <td>Golden Harvest</td>
+                                        <td>Michael Agricola</td>
+                                        <td>Modesto, CA</td>
+                                        <td>200 acres</td>
+                                        <td>2023-06-05</td>
+                                        <td><span class="status-badge status-rejected">Rejected</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1 view-details" data-bs-toggle="modal" data-bs-target="#verificationModal">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success me-1 approve-btn">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" disabled>
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <!-- More rows... -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav aria-label="Table pagination">
+                            <ul class="pagination justify-content-end mt-3">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Farmer Verification Modal -->
+    <div class="modal fade" id="verificationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Farmer Verification Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Farm Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Farm Name</label>
+                                            <input type="text" class="form-control" value="Green Valley Organics" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Farm ID</label>
+                                            <input type="text" class="form-control" value="FV-1001" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Location</label>
+                                            <input type="text" class="form-control" value="Salinas, CA" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Farm Size</label>
+                                            <input type="text" class="form-control" value="120 acres" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Farm Description</label>
+                                        <textarea class="form-control" rows="3" readonly>Family-owned organic farm specializing in leafy greens, strawberries, and heirloom tomatoes. Certified organic since 2010.</textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Primary Products</label>
+                                        <input type="text" class="form-control" value="Leafy greens, strawberries, tomatoes" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Farmer Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Full Name</label>
+                                            <input type="text" class="form-control" value="John Farmer" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Contact Number</label>
+                                            <input type="text" class="form-control" value="(831) 555-0192" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Email Address</label>
+                                        <input type="text" class="form-control" value="john@greenvalleyorganics.com" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Years Farming</label>
+                                        <input type="text" class="form-control" value="15 years" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Additional Notes</label>
+                                        <textarea class="form-control" rows="2" readonly>Previous farmer verification expired. Needs renewal with updated documents.</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Verification Documents</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Business License</label>
+                                            <div class="document-preview" data-bs-toggle="modal" data-bs-target="#documentModal" data-doc="business_license.pdf">
+                                                <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                            </div>
+                                            <div class="mt-2 text-center">
+                                                <small class="text-muted">business_license.pdf</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Organic Certification</label>
+                                            <div class="document-preview" data-bs-toggle="modal" data-bs-target="#documentModal" data-doc="organic_cert.pdf">
+                                                <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                            </div>
+                                            <div class="mt-2 text-center">
+                                                <small class="text-muted">organic_cert.pdf</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Land Ownership Proof</label>
+                                            <div class="document-preview" data-bs-toggle="modal" data-bs-target="#documentModal" data-doc="land_deed.pdf">
+                                                <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                            </div>
+                                            <div class="mt-2 text-center">
+                                                <small class="text-muted">land_deed.pdf</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Tax Identification</label>
+                                            <div class="document-preview" data-bs-toggle="modal" data-bs-target="#documentModal" data-doc="tax_id.pdf">
+                                                <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                            </div>
+                                            <div class="mt-2 text-center">
+                                                <small class="text-muted">tax_id.pdf</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Verification Process</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="verification-steps">
+                                        <div class="verification-step completed">
+                                            <h6>Application Submitted</h6>
+                                            <p>2023-06-10 09:24 AM</p>
+                                        </div>
+                                        <div class="verification-step completed">
+                                            <h6>Document Review</h6>
+                                            <p>2023-06-10 11:45 AM by admin1</p>
+                                        </div>
+                                        <div class="verification-step active">
+                                            <h6>Verification Decision</h6>
+                                            <p>Pending your action</p>
+                                        </div>
+                                        <div class="verification-step">
+                                            <h6>Completion</h6>
+                                            <p>Not yet started</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Verification Notes</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Admin Notes</label>
+                                <textarea class="form-control" rows="3" placeholder="Add your verification notes here..."></textarea>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="requestMoreInfo">
+                                <label class="form-check-label" for="requestMoreInfo">
+                                    Request more information from farmer
+                                </label>
+                            </div>
+                            <div class="mb-3" id="moreInfoSection" style="display: none;">
+                                <label class="form-label">Information Request</label>
+                                <textarea class="form-control" rows="2" placeholder="Specify what additional information you need..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger">Reject Application</button>
+                    <button type="button" class="btn btn-success">Approve Farmer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Preview Modal -->
+    <div class="modal fade" id="documentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Document Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <img src="https://via.placeholder.com/800x1000" class="img-fluid" alt="Document preview">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fas fa-download me-2"></i>Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Verification Modal -->
+    <div class="modal fade" id="newVerificationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Farmer Verification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newVerificationForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Farm Name</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Farm Location</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Farmer Name</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Contact Email</label>
+                                <input type="email" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Upload Documents</label>
+                            <div class="border rounded p-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Business License (PDF)</label>
+                                    <input type="file" class="form-control" accept=".pdf" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Certification Documents</label>
+                                    <input type="file" class="form-control" accept=".pdf,.jpg,.png">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Additional Proof (Optional)</label>
+                                    <input type="file" class="form-control" accept=".pdf,.jpg,.png">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" rows="3" placeholder="Any additional information..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="newVerificationForm" class="btn btn-success">Submit Verification</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#verificationsTable').DataTable({
+                responsive: true,
+                dom: '<"top"f>rt<"bottom"lip><"clear">',
+                pageLength: 10,
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search verifications...",
+                    lengthMenu: "Show _MENU_ entries per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    infoEmpty: "No entries found",
+                    infoFiltered: "(filtered from _MAX_ total entries)"
+                }
+            });
+
+            // Show/hide more info section
+            $('#requestMoreInfo').change(function() {
+                if($(this).is(':checked')) {
+                    $('#moreInfoSection').slideDown();
+                } else {
+                    $('#moreInfoSection').slideUp();
+                }
+            });
+
+            // Approve/reject buttons
+            $('.approve-btn').click(function() {
+                const row = $(this).closest('tr');
+                const farmerId = row.find('td:first').text();
+                approveFarmer(farmerId, row);
+            });
+
+            $('.reject-btn').click(function() {
+                const row = $(this).closest('tr');
+                const farmerId = row.find('td:first').text();
+                rejectFarmer(farmerId, row);
+            });
+
+            // Document preview click
+            $('.document-preview').click(function() {
+                const docName = $(this).data('doc');
+                $('#documentModal .modal-title').text(docName);
+            });
+
+            // Export button
+            $('#exportBtn').click(function() {
+                exportVerifications();
+            });
+        });
+
+        // Approve farmer function
+        async function approveFarmer(farmerId, row) {
+            try {
+                // In a real app, call your smart contract
+                // const contract = new web3.eth.Contract(abi, contractAddress);
+                // await contract.methods.approveFarmer(farmerId).send({ from: adminAddress });
+                
+                // For demo purposes, we'll just update the UI
+                row.find('.status-badge')
+                    .removeClass('status-pending')
+                    .addClass('status-approved')
+                    .text('Approved');
+                
+                row.find('.approve-btn, .reject-btn').prop('disabled', true);
+                
+                showToast('Farmer approved successfully!', 'success');
+            } catch (error) {
+                console.error('Approval failed:', error);
+                showToast('Approval failed: ' + error.message, 'error');
+            }
+        }
+
+        // Reject farmer function
+        async function rejectFarmer(farmerId, row) {
+            try {
+                // In a real app, call your smart contract
+                // const contract = new web3.eth.Contract(abi, contractAddress);
+                // await contract.methods.rejectFarmer(farmerId).send({ from: adminAddress });
+                
+                // For demo purposes, we'll just update the UI
+                row.find('.status-badge')
+                    .removeClass('status-pending')
+                    .addClass('status-rejected')
+                    .text('Rejected');
+                
+                row.find('.approve-btn, .reject-btn').prop('disabled', true);
+                
+                showToast('Farmer application rejected.', 'success');
+            } catch (error) {
+                console.error('Rejection failed:', error);
+                showToast('Rejection failed: ' + error.message, 'error');
+            }
+        }
+
+        // Export verifications
+        function exportVerifications() {
+            // In a real app, this would generate a CSV/Excel file
+            showToast('Export started. Your download will begin shortly.', 'info');
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = $(`
+                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `);
+            
+            $('#toastContainer').remove();
+            $('body').append('<div id="toastContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 1100;"></div>');
+            $('#toastContainer').append(toast);
+            
+            const bsToast = new bootstrap.Toast(toast[0]);
+            bsToast.show();
+            
+            toast.on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }
+    </script>
+</body>
+</

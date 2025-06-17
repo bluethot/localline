@@ -1,9 +1,9 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Same head content as your main page -->
-    <title>Sunny Acres Farm | FarmChain</title
+    <title>Sunny Acres Farm | LocalHarvestLine</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -14,6 +14,7 @@
             --primary-green: #4CAF50;
             --dark-green: #388E3C;
             --light-green: #8BC34A;
+            --lighter-green: #d1e7dd;
         }
         .hero-gradient {
             background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
@@ -64,22 +65,86 @@
             background-color: var(--primary-green);
             color: white;
         }
+        .practice-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--lighter-green);
+            margin: 0 auto 15px;
+            color: var(--dark-green);
+            font-size: 1.5rem;
+        }
+        .testimonial-card {
+            border-left: 4px solid var(--primary-green);
+        }
+        .seasonal-calendar {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .calendar-month {
+            background-color: var(--lighter-green);
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .calendar-items {
+            padding: 15px;
+            background-color: white;
+        }
+        .harvest-badge {
+            background-color: var(--light-green);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
-
-
-
-
-
-
-
-
-
-
-
-    
 <body>
     <!-- Navigation (same as main page) -->
+
+
+    <!-- Farm Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success " style="top: 56px;">
+        <div class="container">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#farmNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="farmNavbar">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#story">Our Story</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#products">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#practices">Practices</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#visit">Visit Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#reviews">Reviews</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#calendar">Seasonal Calendar</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <button class="btn btn-outline-light me-2">
+                        <i class="fas fa-download me-1"></i> Farm Brochure
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <!-- Farm Header Section -->
     <section class="py-5 bg-light">
@@ -92,8 +157,11 @@
                         <span class="badge bg-success">Non-GMO</span>
                         <span class="badge bg-success">Sustainable</span>
                     </div>
-                    <button class="btn btn-sm btn-outline-success">
+                    <button class="btn btn-sm btn-outline-success mb-2">
                         <i class="fas fa-share-alt me-1"></i> Share Farm
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-heart me-1"></i> Save Farm
                     </button>
                 </div>
                 <div class="col-md-6">
@@ -130,10 +198,13 @@
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star-half-alt"></i>
+                                <span class="text-dark ms-1">(42)</span>
                             </div>
-                            <p class="small text-muted">Based on 42 reviews</p>
-                            <button class="btn btn-sm btn-outline-success w-100">
+                            <button class="btn btn-sm btn-outline-success w-100 mb-2">
                                 Read Reviews
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary w-100">
+                                <i class="fas fa-certificate me-1"></i> View Certifications
                             </button>
                         </div>
                     </div>
@@ -142,22 +213,67 @@
         </div>
     </section>
 
+
     <!-- Farm Story Section -->
-    <section class="py-5 bg-white">
+    <section id="story" class="py-5 bg-white">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 mx-auto text-center">
                     <h2 class="mb-4">Our Story</h2>
                     <p class="lead">Three generations of the Henderson family have worked this land since 1987. What began as a small fruit stand has grown into a thriving organic farm, but our commitment to sustainable practices and quality produce has never wavered.</p>
-                    <img src="farm-story.jpg" class="img-fluid rounded mt-4 mb-4" alt="Farm family">
+                    <img src="farm-story.jpg" class="img-fluid rounded mt-4 mb-4 shadow" alt="Farm family">
                     <p>We believe in farming that works with nature, not against it. Our berries are grown without synthetic pesticides, and we use integrated pest management and crop rotation to maintain healthy soil. Every strawberry you buy from us carries not just flavor, but a story of care and dedication.</p>
+                    
+                    <div class="timeline mt-5 text-start">
+                        <h3 class="text-center mb-4">Our Journey</h3>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <h5>1987 - Humble Beginnings</h5>
+                            <p class="text-muted">The Henderson family purchases 20 acres in Salinas Valley and plants their first strawberry fields.</p>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-leaf"></i>
+                            </div>
+                            <h5>1995 - Transition to Organic</h5>
+                            <p class="text-muted">We begin transitioning our farming practices to organic methods, completing the process in 2000.</p>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <h5>2005 - USDA Certification</h5>
+                            <p class="text-muted">After years of hard work, we receive official USDA Organic certification.</p>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <h5>2012 - Farm Stand Opens</h5>
+                            <p class="text-muted">We open our farm stand to the public, selling directly to our community.</p>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h5>2020 - Next Generation</h5>
+                            <p class="text-muted">The third generation of Hendersons joins the farm, bringing new ideas and energy.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Farm Products Section -->
-    <section class="py-5 bg-light">
+    <section id="products" class="py-5 bg-light">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0">Farm Products</h2>
@@ -167,7 +283,11 @@
                         <option>All Products</option>
                         <option>Fruits</option>
                         <option>Vegetables</option>
+                        <option>Value-Added</option>
                     </select>
+                    <button class="btn btn-outline-success">
+                        <i class="fas fa-filter me-1"></i> Filters
+                    </button>
                 </div>
             </div>
             
@@ -190,6 +310,7 @@
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star-half-alt"></i>
+                                    <span class="text-dark ms-1">(28)</span>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between">
@@ -204,32 +325,138 @@
                     </div>
                 </div>
                 
-                <!-- More products from this farm -->
+                <!-- Product 2 -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card product-card h-100">
+                        <span class="verification-badge">
+                            <i class="fas fa-check-circle me-1"></i> Verified
+                        </span>
+                        <img src="raspberries.jpg" class="card-img-top" alt="Organic Raspberries">
+                        <div class="card-body">
+                            <h5 class="card-title mb-1">Organic Raspberries</h5>
+                            <p class="text-muted small mb-2">Harvested: June 12, 2023</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="text-success mb-0">$6.99/pint</h4>
+                                <div class="text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span class="text-dark ms-1">(15)</span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-sm btn-outline-primary view-details" data-id="2">
+                                    <i class="fas fa-eye me-1"></i> Details
+                                </button>
+                                <button class="btn btn-sm btn-success add-to-cart" data-id="2">
+                                    <i class="fas fa-cart-plus me-1"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 3 -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card product-card h-100">
+                        <span class="verification-badge">
+                            <i class="fas fa-check-circle me-1"></i> Verified
+                        </span>
+                        <img src="cherries.jpg" class="card-img-top" alt="Organic Cherries">
+                        <div class="card-body">
+                            <h5 class="card-title mb-1">Organic Cherries</h5>
+                            <p class="text-muted small mb-2">Harvested: June 18, 2023</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="text-success mb-0">$5.99/lb</h4>
+                                <div class="text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <span class="text-dark ms-1">(9)</span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-sm btn-outline-primary view-details" data-id="3">
+                                    <i class="fas fa-eye me-1"></i> Details
+                                </button>
+                                <button class="btn btn-sm btn-success add-to-cart" data-id="3">
+                                    <i class="fas fa-cart-plus me-1"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 4 -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card product-card h-100">
+                        <span class="verification-badge">
+                            <i class="fas fa-check-circle me-1"></i> Verified
+                        </span>
+                        <img src="jam.jpg" class="card-img-top" alt="Strawberry Jam">
+                        <div class="card-body">
+                            <h5 class="card-title mb-1">Strawberry Jam</h5>
+                            <p class="text-muted small mb-2">Made: May 2023</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="text-success mb-0">$7.99/jar</h4>
+                                <div class="text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <span class="text-dark ms-1">(32)</span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-sm btn-outline-primary view-details" data-id="4">
+                                    <i class="fas fa-eye me-1"></i> Details
+                                </button>
+                                <button class="btn btn-sm btn-success add-to-cart" data-id="4">
+                                    <i class="fas fa-cart-plus me-1"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button class="btn btn-outline-success">
+                    <i class="fas fa-arrow-down me-1"></i> Load More Products
+                </button>
             </div>
         </div>
     </section>
 
     <!-- Farm Practices Section -->
-    <section class="py-5 bg-white">
+    <section id="practices" class="py-5 bg-white">
         <div class="container">
             <h2 class="text-center mb-5">Our Farming Practices</h2>
             <div class="row g-4">
                 <div class="col-md-4">
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center">
-                            <div class="bg-success bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
-                                <i class="fas fa-leaf fa-2x text-success"></i>
+                            <div class="practice-icon">
+                                <i class="fas fa-leaf"></i>
                             </div>
                             <h4>Organic Certification</h4>
                             <p>Certified USDA Organic since 2005. No synthetic pesticides, herbicides, or fertilizers used in our fields.</p>
+                            <button class="btn btn-sm btn-outline-success mt-2">
+                                View Certification
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center">
-                            <div class="bg-success bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
-                                <i class="fas fa-water fa-2x text-success"></i>
+                            <div class="practice-icon">
+                                <i class="fas fa-water"></i>
                             </div>
                             <h4>Water Conservation</h4>
                             <p>Drip irrigation and rainwater collection systems reduce water usage by 40% compared to conventional farms.</p>
@@ -239,11 +466,73 @@
                 <div class="col-md-4">
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center">
-                            <div class="bg-success bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
-                                <i class="fas fa-bug fa-2x text-success"></i>
+                            <div class="practice-icon">
+                                <i class="fas fa-bug"></i>
                             </div>
                             <h4>Pest Management</h4>
                             <p>Beneficial insects and companion planting create a balanced ecosystem that naturally controls pests.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="practice-icon">
+                                <i class="fas fa-recycle"></i>
+                            </div>
+                            <h4>Soil Health</h4>
+                            <p>We practice crop rotation, cover cropping, and compost application to maintain fertile, living soil.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="practice-icon">
+                                <i class="fas fa-solar-panel"></i>
+                            </div>
+                            <h4>Renewable Energy</h4>
+                            <p>Our farm runs on 100% renewable energy from solar panels and a small wind turbine.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="practice-icon">
+                                <i class="fas fa-people-carry"></i>
+                            </div>
+                            <h4>Fair Labor</h4>
+                            <p>We pay living wages and provide benefits to all our workers year-round.</p>
+                            <button class="btn btn-sm btn-outline-success mt-2">
+                                Meet Our Team
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-5">
+                <div class="col-lg-10 mx-auto">
+                    <div class="card border-success">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Sustainability Metrics</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <div class="display-4 text-success">40%</div>
+                                    <p class="text-muted">Water saved compared to conventional farms</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="display-4 text-success">100%</div>
+                                    <p class="text-muted">Renewable energy usage</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="display-4 text-success">0</div>
+                                    <p class="text-muted">Synthetic chemicals used</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -252,7 +541,7 @@
     </section>
 
     <!-- Farm Visit Section -->
-    <section class="py-5 bg-light">
+    <section id="visit" class="py-5 bg-light">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6 mb-4 mb-lg-0">
@@ -271,15 +560,217 @@
                             Farm Stand
                             <span class="badge bg-success rounded-pill">Daily 9AM-5PM</span>
                         </li>
+                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                            School Groups
+                            <span class="badge bg-success rounded-pill">By appointment</span>
+                        </li>
                     </ul>
-                    <button class="btn btn-success btn-lg">
+                    <button class="btn btn-success btn-lg me-2">
                         <i class="fas fa-calendar-alt me-2"></i> Schedule a Visit
+                    </button>
+                    <button class="btn btn-outline-success btn-lg">
+                        <i class="fas fa-images me-2"></i> View Photo Tour
                     </button>
                 </div>
                 <div class="col-lg-6">
-                    <div class="ratio ratio-16x9">
+                    <div class="ratio ratio-16x9 shadow rounded overflow-hidden">
                         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3221.234567890123!2d-121.12345678901234!3d36.12345678901234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzbCsDA3JzI0LjQiTiAxMjHCsDA3JzI0LjQiVw!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus" allowfullscreen="" loading="lazy"></iframe>
                     </div>
+                    <div class="mt-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-clock text-success me-2"></i>
+                            <span><strong>Hours:</strong> Monday-Sunday 9:00 AM - 5:00 PM</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-car text-success me-2"></i>
+                            <span><strong>Parking:</strong> Free parking available on site</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-wheelchair text-success me-2"></i>
+                            <span><strong>Accessibility:</strong> Wheelchair accessible paths available</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Seasonal Calendar Section -->
+    <section id="calendar" class="py-5 bg-white">
+        <div class="container">
+            <h2 class="text-center mb-5">Seasonal Calendar</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card seasonal-calendar shadow-sm">
+                        <div class="calendar-month bg-success text-white p-3">
+                            <h4 class="mb-0">What's in Season</h4>
+                        </div>
+                        <div class="calendar-items">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <h5>Spring</h5>
+                                    <div>
+                                        <span class="harvest-badge">Strawberries</span>
+                                        <span class="harvest-badge">Asparagus</span>
+                                        <span class="harvest-badge">Peas</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5>Summer</h5>
+                                    <div>
+                                        <span class="harvest-badge">Cherries</span>
+                                        <span class="harvest-badge">Raspberries</span>
+                                        <span class="harvest-badge">Blackberries</span>
+                                        <span class="harvest-badge">Peaches</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5>Fall</h5>
+                                    <div>
+                                        <span class="harvest-badge">Apples</span>
+                                        <span class="harvest-badge">Pears</span>
+                                        <span class="harvest-badge">Pumpkins</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5>Winter</h5>
+                                    <div>
+                                        <span class="harvest-badge">Winter Squash</span>
+                                        <span class="harvest-badge">Preserves</span>
+                                        <span class="harvest-badge">Honey</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-success">
+                            <i class="fas fa-bell me-1"></i> Get Harvest Alerts
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Customer Reviews</h2>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 testimonial-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <div>
+                                    <h5 class="mb-1">Sarah Johnson</h5>
+                                    <div class="text-warning small">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                </div>
+                                <small class="text-muted">June 15, 2023</small>
+                            </div>
+                            <p class="card-text">"The best strawberries I've ever tasted! The Henderson family is so welcoming and their farm is beautiful. My kids loved the pick-your-own experience."</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex align-items-center">
+                                <img src="review1.jpg" class="rounded-circle me-2" width="30" alt="Sarah">
+                                <small>Verified Purchase • Organic Strawberries</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 testimonial-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <div>
+                                    <h5 class="mb-1">Michael Chen</h5>
+                                    <div class="text-warning small">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                </div>
+                                <small class="text-muted">May 28, 2023</small>
+                            </div>
+                            <p class="card-text">"As a chef, I appreciate the quality and freshness of Sunny Acres' produce. Their raspberries are consistently perfect for my desserts. Plus, their sustainable practices align with our restaurant's values."</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex align-items-center">
+                                <img src="review2.jpg" class="rounded-circle me-2" width="30" alt="Michael">
+                                <small>Regular Customer • 2+ years</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 testimonial-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <div>
+                                    <h5 class="mb-1">The Rodriguez Family</h5>
+                                    <div class="text-warning small">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                </div>
+                                <small class="text-muted">April 10, 2023</small>
+                            </div>
+                            <p class="card-text">"We did the farm tour and it was educational for our kids and enjoyable for us adults. Learning about their organic practices made us appreciate their products even more. The strawberry jam is to die for!"</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex align-items-center">
+                                <img src="review3.jpg" class="rounded-circle me-2" width="30" alt="Rodriguez">
+                                <small>Farm Tour Participants</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button class="btn btn-outline-success me-2">
+                    <i class="fas fa-book-open me-1"></i> Read All Reviews
+                </button>
+                <button class="btn btn-success">
+                    <i class="fas fa-pen me-1"></i> Write a Review
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="py-5 bg-success text-white">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <h2 class="mb-3">Join Our Farm Community</h2>
+                    <p class="lead mb-4">Sign up for our newsletter to receive seasonal updates, special offers, and farm news.</p>
+                    <div class="row g-2 justify-content-center">
+                        <div class="col-md-8">
+                            <input type="email" class="form-control form-control-lg" placeholder="Your email address">
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-light btn-lg text-success w-100">
+                                Subscribe
+                            </button>
+                        </div>
+                    </div>
+                    <p class="small mt-3">We respect your privacy. Unsubscribe at any time.</p>
                 </div>
             </div>
         </div>
@@ -287,63 +778,84 @@
 
     <!-- Footer (same as main page) -->
 
-    <!-- JavaScript (same as main page) -->
+    <!-- JavaScript -->
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // In your main JavaScript file, add this function to handle farm store visits
+        function loadFarmStore(farmId) {
+            // In a real app, this would fetch farm data from your API/blockchain
+            const farms = [
+                {
+                    id: 1,
+                    name: "Sunny Acres Farm",
+                    location: "Salinas, CA",
+                    distance: "12 miles",
+                    image: "farm1.jpg",
+                    description: "Family-owned since 1987, specializing in organic berries and stone fruits.",
+                    practices: ["USDA Organic", "Non-GMO", "Sustainable"],
+                    products: [1, 2, 3, 4], // Product IDs
+                    rating: 4.8,
+                    reviews: 42,
+                    story: "Three generations of the Henderson family have worked this land...",
+                    storyImage: "farm-story.jpg",
+                    contact: {
+                        phone: "(555) 123-4567",
+                        email: "contact@sunnyacres.com",
+                        address: "123 Orchard Lane, Salinas, CA"
+                    },
+                    visits: {
+                        tours: "Every Saturday",
+                        pickYourOwn: "June-August",
+                        farmStand: "Daily 9AM-5PM"
+                    }
+                }
+                // More farms...
+            ];
+            
+            const farm = farms.find(f => f.id == farmId);
+            
+            // Update the farm store page with this data
+            // This would be done on the farm-store.html page load
+            console.log("Loaded farm:", farm);
+        }
 
-    
-<script>
-     In your main JavaScript file, add this function to handle farm store visits
-function loadFarmStore(farmId) {
-     In a real app, this would fetch farm data from your API/blockchain
-    const farms = [
-        {
-            id: 1,
-            name: "Sunny Acres Farm",
-            location: "Salinas, CA",
-            distance: "12 miles",
-            image: "farm1.jpg",
-            description: "Family-owned since 1987, specializing in organic berries and stone fruits.",
-            practices: ["USDA Organic", "Non-GMO", "Sustainable"],
-            products: [1, 2, 3], // Product IDs
-            rating: 4.8,
-            reviews: 42,
-            story: "Three generations of the Henderson family have worked this land...",
-            storyImage: "farm-story.jpg",
-            contact: {
-                phone: "(555) 123-4567",
-                email: "contact@sunnyacres.com",
-                address: "123 Orchard Lane, Salinas, CA"
-            },
-            visits: {
-                tours: "Every Saturday",
-                pickYourOwn: "June-August",
-                farmStand: "Daily 9AM-5PM"
+        // Add this to your event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we're on the farm store page
+            if (window.location.pathname.includes('farm-store.html')) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const farmId = urlParams.get('id');
+                if (farmId) {
+                    loadFarmStore(farmId);
+                }
             }
-        }
-        // More farms...
-    ];
-    
-    const farm = farms.find(f => f.id == farmId);
-    
-    // Update the farm store page with this data
-    // This would be done on the farm-store.html page load
-    console.log("Loaded farm:", farm);
-}
-
-// Add this to your event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if we're on the farm store page
-    if (window.location.pathname.includes('farm-store.html')) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const farmId = urlParams.get('id');
-        if (farmId) {
-            loadFarmStore(farmId);
-        }
-    }
-});
-</script>
-
+            
+            // Product card hover effect
+            const productCards = document.querySelectorAll('.product-card');
+            productCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                    this.style.boxShadow = '';
+                });
+            });
+        });
+    </script>
 </body>
 </html>

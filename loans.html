@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmChain | Delivery Management</title>
+    
+    <!-- Shared CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    
+    <!-- Delivery Page CSS -->
+    <style>
+        .delivery-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .delivery-filter-card {
+            position: sticky;
+            top: 20px;
+        }
+        
+        .delivery-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-green);
+        }
+        
+        .delivery-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .delivery-card.urgent {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .delivery-card.completed {
+            border-left: 4px solid #6c757d;
+            opacity: 0.8;
+        }
+        
+        .delivery-status-badge {
+            min-width: 100px;
+        }
+        
+        .delivery-progress {
+            height: 8px;
+            border-radius: 4px;
+        }
+        
+        .delivery-map {
+            height: 200px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .delivery-map img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .delivery-map-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 8px 12px;
+        }
+        
+        .driver-card {
+            transition: all 0.3s ease;
+        }
+        
+        .driver-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary-green);
+            border: 3px solid white;
+        }
+        
+        .timeline-item.completed::before {
+            background-color: var(--primary-green);
+        }
+        
+        .timeline-item.active::before {
+            background-color: #ffc107;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .timeline-item.pending::before {
+            background-color: #6c757d;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .delivery-filter-card {
+                position: static;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+    
+    <!-- Mapbox GL JS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.js"></script>
+</head>
+<body>
+    <!-- Dashboard Layout -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar (same as dashboard) -->
+            <div class="col-lg-2 dashboard-sidebar bg-white p-0 border-end">
+                <!-- Sidebar content from dashboard -->
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-10 ms-auto p-0">
+                <!-- Top Navigation -->
+                <header class="delivery-header sticky-top p-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h4 mb-0">Delivery Management</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Deliveries</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="d-flex">
+                        <button class="btn btn-outline-success me-2">
+                            <i class="fas fa-calendar-alt me-2"></i> Schedule
+                        </button>
+                        <button class="btn btn-success">
+                            <i class="fas fa-truck me-2"></i> New Delivery
+                        </button>
+                    </div>
+                </header>
+                
+                <!-- Delivery Content -->
+                <main class="p-4">
+                    <div class="row">
+                        <!-- Filters Column -->
+                        <div class="col-lg-3 mb-4">
+                            <div class="card delivery-filter-card shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="mb-3">Filter Deliveries</h5>
+                                    
+                                    <!-- Search -->
+                                    <div class="mb-4">
+                                        <label class="form-label">Search Deliveries</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" placeholder="Order #, supplier...">
+                                            <button class="btn btn-success" type="button">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Status -->
+                                    <div class="mb-4">
+                                        <label class="form-label">Delivery Status</label>
+                                        <div class="list-group list-group-flush">
+                                            <a href="#" class="list-group-item list-group-item-action active d-flex justify-content-between align-items-center">
+                                                All Deliveries
+                                                <span class="badge bg-primary rounded-pill">14</span>
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                Scheduled
+                                                <span class="badge bg-secondary rounded-pill">3</span>
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                In Transit
+                                                <span class="badge bg-info rounded-pill">2</span>
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                Delivered Today
+                                                <span class="badge bg-success rounded-pill">5</span>
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                Delayed
+                                                <span class="badge bg-warning rounded-pill">1</span>
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                Cancelled
+                                                <span class="badge bg-danger rounded-pill">0</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Date Range -->
+                                    <div class="mb-4">
+                                        <label class="form-label">Date Range</label>
+                                        <select class="form-select mb-2">
+                                            <option selected>Today + Upcoming</option>
+                                            <option>Today Only</option>
+                                            <option>This Week</option>
+                                            <option>This Month</option>
+                                            <option>Last Month</option>
+                                            <option>Custom Range</option>
+                                        </select>
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <input type="date" class="form-control" placeholder="From">
+                                            </div>
+                                            <div class="col-6">
+                                                <input type="date" class="form-control" placeholder="To">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Suppliers -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Suppliers</label>
+                                        <select class="form-select">
+                                            <option selected>All Suppliers</option>
+                                            <option>Sunny Acres Farm</option>
+                                            <option>Valley Harvest</option>
+                                            <option>Green Pastures Ranch</option>
+                                            <option>Mountain View Dairy</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button class="btn btn-success w-100 mt-2">Apply Filters</button>
+                                    <button class="btn btn-outline-secondary w-100 mt-2">Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Deliveries Column -->
+                        <div class="col-lg-9">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                                <h2 class="mb-3 mb-md-0">Today's Deliveries</h2>
+                                <div class="d-flex">
+                                    <select class="form-select me-2">
+                                        <option selected>Sort By: Delivery Time</option>
+                                        <option>Status</option>
+                                        <option>Supplier</option>
+                                        <option>Order Size</option>
+                                    </select>
+                                    <button class="btn btn-outline-success">
+                                        <i class="fas fa-download me-2"></i> Export
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Delivery Cards -->
+                            <div class="row g-4">
+                                <!-- Active Delivery -->
+                                <div class="col-12">
+                                    <div class="card delivery-card">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3 mb-md-0">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="me-3">
+                                                            <span class="badge delivery-status-badge bg-info">In Transit</span>
+                                                        </div>
+                                                        <div>
+                                                            <h5 class="mb-0">Delivery #DL-7821</h5>
+                                                            <small class="text-muted">Order #FC-4892 • Sunny Acres Farm</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex justify-content-md-end">
+                                                        <div class="text-end me-3">
+                                                            <h6 class="mb-0">Est. Arrival: 2:15 PM</h6>
+                                                            <small class="text-muted">Scheduled: 2-4 PM</small>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <h5 class="mb-0 text-success">8 items</h5>
+                                                            <small>$286.50</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <hr>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-8 mb-3 mb-md-0">
+                                                    <div class="delivery-map">
+                                                        <img src="../images/map-placeholder.jpg" alt="Delivery route map">
+                                                        <div class="delivery-map-overlay">
+                                                            <div class="d-flex justify-content-between">
+                                                                <small><i class="fas fa-truck me-1"></i> 12 min away</small>
+                                                                <small>3.2 miles</small>
+                                                            </div>
+                                                            <div class="progress delivery-progress mt-1">
+                                                                <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="card driver-card h-100">
+                                                        <div class="card-body text-center">
+                                                            <img src="../images/driver.jpg" class="rounded-circle mb-2" width="80" height="80" alt="Driver">
+                                                            <h6 class="mb-0">Michael Rodriguez</h6>
+                                                            <small class="text-muted">FarmChain Driver</small>
+                                                            
+                                                            <div class="mt-3">
+                                                                <button class="btn btn-sm btn-outline-success w-100 mb-2">
+                                                                    <i class="fas fa-phone me-1"></i> Call
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-primary w-100">
+                                                                    <i class="fas fa-comment me-1"></i> Message
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <hr>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <div class="timeline">
+                                                        <div class="timeline-item completed">
+                                                            <h6 class="mb-1">Order Confirmed</h6>
+                                                            <p class="text-muted small mb-2">Today, 8:30 AM</p>
+                                                        </div>
+                                                        
+                                                        <div class="timeline-item completed">
+                                                            <h6 class="mb-1">Picked Up from Farm</h6>
+                                                            <p class="text-muted small mb-2">Today, 1:45 PM</p>
+                                                        </div>
+                                                        
+                                                        <div class="timeline-item active">
+                                                            <h6 class="mb-1">In Transit</h6>
+                                                            <p class="text-muted small mb-2">ETA: 2:15 PM</p>
+                                                        </div>
+                                                        
+                                                        <div class="timeline-item pending">
+                                                            <h6 class="mb-1">Delivery Completed</h6>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="d-flex justify-content-md-end gap-2">
+                                                        <button class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-map-marked-alt me-1"></i> Live Map
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-secondary">
+                                                            <i class="fas fa-file-invoice me-1"></i> Details
+                                                        </button>
+                                                        <button class="btn btn-sm btn-success">
+                                                            <i class="fas fa-check-circle me-1"></i> Received
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Scheduled Delivery -->
+                                <div class="col-12">
+                                    <div class="card delivery-card">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3 mb-md-0">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="me-3">
+                                                            <span class="badge delivery-status-badge bg-secondary">Scheduled</span>
+                                                        </div>
+                                                        <div>
+                                                            <h5 class="mb-0">Delivery #DL-7819</h5>
+                                                            <small class="text-muted">Order #FC-4881 • Valley Harvest</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex justify-content-md-end">
+                                                        <div class="text-end me-3">
+                                                            <h6 class="mb-0">Scheduled: Tomorrow, 9-11 AM</h6>
+                                                            <small class="text-muted">Pre-order</small>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <h5 class="mb-0 text-success">12 items</h5>
+                                                            <small>$412.75</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <hr>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-8 mb-3 mb-md-0">
+                                                    <div class="delivery-map">
+                                                        <img src="../images/map-placeholder2.jpg" alt="Delivery route map">
+                                                        <div class="delivery-map-overlay">
+                                                            <div class="d-flex justify-content-between">
+                                                                <small><i class="fas fa-warehouse me-1"></i> Valley Harvest Farm</small>
+                                                                <small>8.5 miles</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="card h-100 bg-light">
+                                                        <div class="card-body d-flex flex-column justify-content-center text-center">
+                                                            <i class="fas fa-clock fa-2x text-secondary mb-2"></i>
+                                                            <h6 class="mb-0">Scheduled Delivery</h6>
+                                                            <small class="text-muted">Driver will be assigned tomorrow morning</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <hr>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <div class="timeline">
+                                                        <div class="timeline-item completed">
+                                                            <h6 class="mb-1">Order Confirmed</h6>
+                                                            <p class="text-muted small mb-2">Yesterday, 10:15 AM</p>
+                                                        </div>
+                                                        
+                                                        <div class="timeline-item pending">
+                                                            <h6 class="mb-1">Scheduled for Pickup</h6>
+                                                            <p class="text-muted small mb-2">Tomorrow, 7:30 AM</p>
+                                                        </div>
+                                                        
+                                                        <div class="timeline-item pending">
+                                                            <h6 class="mb-1">Delivery Window</h6>
+                                                            <p class="text-muted small mb-2">Tomorrow, 9-11 AM</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="d-flex justify-content-md-end gap-2">
+                                                        <button class="btn btn-sm btn-outline-secondary">
+                                                            <i class="fas fa-edit me-1"></i> Reschedule
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-danger">
+                                                            <i class="fas fa-times me-1"></i> Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Completed Delivery -->
+                                <div class="col-12">
+                                    <div class="card delivery-card completed">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3 mb-md-0">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="me-3">
+                                                            <span class="badge delivery-status-badge bg-success">Delivered</span>
+                                                        </div>
+                                                        <div>
+                                                            <h5 class="mb-0">Delivery #DL-7812</h5>
+                                                            <small class="text-muted">Order #FC-4875 • Green Pastures Ranch</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex justify-content-md-end">
+                                                        <div class="text-end me-3">
+                                                            <h6 class="mb-0">Delivered: Jun 14, 10:30 AM</h6>
+                                                            <small class="text-muted">On time</small>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <h5 class="mb-0 text-success">5 items</h5>
+                                                            <small>$158.20</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <hr>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-8 mb-3 mb-md-0">
+                                                    <div class="delivery-map">
+                                                        <img src="../images/map-placeholder3.jpg" alt="Completed delivery map">
+                                                        <div class="delivery-map-overlay">
+                                                            <div class="d-flex justify-content-between">
+                                                                <small><i class="fas fa-check-circle me-1"></i> Delivered</small>
+                                                                <small>10:28 AM</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="card h-100 bg-light">
+                                                        <div class="card-body">
+                                                            <div class="d-flex align-items-center mb-3">
+                                                                <img src="../images/driver2.jpg" class="rounded-circle me-3" width="50" height="50" alt="Driver">
+                                                                <div>
+                                                                    <h6 class="mb-0">Sarah Johnson</h6>
+                                                                    <small class="text-muted">FarmChain Driver</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="me-3">
+                                                                    <i class="fas fa-star text-warning"></i>
+                                                                    <i class="fas fa-star text-warning"></i>
+                                                                    <i class="fas fa-star text-warning"></i>
+                                                                    <i class="fas fa-star text-warning"></i>
+                                                                    <i class="fas fa-star text-warning"></i>
+                                                                </div>
+                                                                <small>5.0</small>
+                                                            </div>
+                                                            <button class="btn btn-sm btn-outline-success w-100 mt-3">
+                                                                <i class="fas fa-redo me-1"></i> Reorder
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <hr>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <div class="timeline">
+                                                        <div class="timeline-item completed">
+                                                            <h6 class="mb-1">Order Confirmed</h6>
+                                                            <p class="text-muted small mb-2">Jun 12, 3:45 PM</p>
+                                                        </div>
+                                                        
+                                                        <div class="timeline-item completed">
+                                                            <h6 class="mb-1">Picked Up from Farm</h6>
+                                                            <p class="text-muted small mb-2">Jun 14, 9:15 AM</p>
+                                                        </div>
+                                                        
+                                                        <div class="timeline-item completed">
+                                                            <h6 class="mb-1">In Transit</h6>
+                                                            <p class="text-muted small mb-2">Jun 14, 9:30 AM</p>
+                                                        </div>
+                                                        
+                                                        <div class="timeline-item completed">
+                                                            <h6 class="mb-1">Delivery Completed</h6>
+                                                            <p class="text-muted small mb-2">Jun 14, 10:28 AM</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="d-flex justify-content-md-end gap-2">
+                                                        <button class="btn btn-sm btn-outline-secondary">
+                                                            <i class="fas fa-file-invoice me-1"></i> Invoice
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-comment me-1"></i> Review
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Pagination -->
+                            <nav class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Detail Modal -->
+    <div class="modal fade" id="deliveryDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5">Delivery #DL-7821</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-info me-3">In Transit</span>
+                                <small class="text-muted">Order #FC-4892 • Sunny Acres Farm</small>
+                            </div>
+                            <h5 class="mb-3">Current Status: On the way</h5>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1">Estimated Arrival</h6>
+                                            <p class="mb-0">2:15 PM (15 min)</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <h6 class="mb-1">Driver</h6>
+                                            <p class="mb-0">Michael Rodriguez</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="delivery-map mb-3" style="height: 150px;">
+                                <img src="../images/map-placeholder.jpg" alt="Delivery route map">
+                                <div class="delivery-map-overlay">
+                                    <div class="d-flex justify-content-between">
+                                        <small><i class="fas fa-truck me-1"></i> 12 min away</small>
+                                        <small>3.2 miles</small>
+                                    </div>
+                                    <div class="progress delivery-progress mt-1">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-outline-success w-100 mb-2">
+                                <i class="fas fa-phone me-1"></i> Call Driver
+                            </button>
+                            <button class="btn btn-outline-primary w-100">
+                                <i class="fas fa-comment me-1"></i> Message Driver
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="mb-3">Delivery Details</h5>
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted">Order Placed</small>
+                                            <p class="mb-0">Today, 8:30 AM</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Pickup Time</small>
+                                            <p class="mb-0">Today, 1:45 PM</p>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted">Scheduled Window</small>
+                                            <p class="mb-0">Today, 2-4 PM</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Estimated Arrival</small>
+                                            <p class="mb-0">2:15 PM</p>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted">Vehicle</small>
+                                            <p class="mb-0">Refrigerated Van</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Temperature</small>
+                                            <p class="mb-0">38°F (OK)</p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Total Items</strong>
+                                        <strong>8</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Order Total</strong>
+                                        <strong>$286.50</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mb-3">Delivery Items</h5>
+                    <div class="table-responsive mb-4">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Status</th>
+                                    <th>Temp Check</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="../images/tomatoes-case.jpg" class="order-item-img me-3" alt="Organic Tomatoes">
+                                            <div>
+                                                <h6 class="mb-0">Organic Tomatoes</h6>
+                                                <small class="text-muted">Case (25 lbs)</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>2</td>
+                                    <td><span class="badge bg-success">Loaded</span></td>
+                                    <td>42°F</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="../images/greens-case.jpg" class="order-item-img me-3" alt="Mixed Greens">
+                                            <div>
+                                                <h6 class="mb-0">Mixed Greens</h6>
+                                                <small class="text-muted">Case (15 lbs)</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>1</td>
+                                    <td><span class="badge bg-success">Loaded</span></td>
+                                    <td>36°F</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="../images/herbs-bundle.jpg" class="order-item-img me-3" alt="Fresh Herbs">
+                                            <div>
+                                                <h6 class="mb-0">Fresh Herb Bundle</h6>
+                                                <small class="text-muted">Pack of 10</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>3</td>
+                                    <td><span class="badge bg-success">Loaded</span></td>
+                                    <td>38°F</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="mb-3">Delivery Timeline</h5>
+                    <div class="timeline">
+                        <div class="timeline-item completed">
+                            <h6 class="mb-1">Order Confirmed</h6>
+                            <p class="text-muted small mb-2">Today, 8:30 AM</p>
+                            <p class="mb-0">Order confirmed by restaurant</p>
+                        </div>
+                        
+                        <div class="timeline-item completed">
+                            <h6 class="mb-1">Picked Up from Farm</h6>
+                            <p class="text-muted small mb-2">Today, 1:45 PM</p>
+                            <p class="mb-0">Driver Michael Rodriguez scanned all items</p>
+                        </div>
+                        
+                        <div class="timeline-item active">
+                            <h6 class="mb-1">In Transit</h6>
+                            <p class="text-muted small mb-2">ETA: 2:15 PM</p>
+                            <p class="mb-0">Vehicle location updated 2 min ago</p>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <h6 class="mb-1">Delivery Completed</h6>
+                            <p class="text-muted small mb-2">Pending</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success">Confirm Receipt</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Map Modal -->
+    <div class="modal fade" id="liveMapModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5">Live Delivery Tracking - DL-7821</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0" style="height: 60vh;">
+                    <div id="map" style="width: 100%; height: 100%;"></div>
+                </div>
+                <div class="modal-footer">
+                    <div class="d-flex justify-content-between w-100 align-items-center">
+                        <div>
+                            <h6 class="mb-0">Driver: Michael Rodriguez</h6>
+                            <small class="text-muted">ETA: 2:15 PM (12 min)</small>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-success">Contact Driver</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize map
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize delivery detail modals
+            const deliveryCards = document.querySelectorAll('.delivery-card');
+            
+            deliveryCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const modal = new bootstrap.Modal(document.getElementById('deliveryDetailModal'));
+                    modal.show();
+                });
+            });
+            
+            // Initialize live map modal
+            const liveMapButtons = document.querySelectorAll('[data-target="#liveMapModal"]');
+            liveMapButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modal = new bootstrap.Modal(document.getElementById('liveMapModal'));
+                    modal.show();
+                    
+                    // Initialize map when modal is shown
+                    document.getElementById('liveMapModal').addEventListener('shown.bs.modal', function() {
+                        mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+                        const map = new mapboxgl.Map({
+                            container: 'map',
+                            style: 'mapbox://styles/mapbox/streets-v11',
+                            center: [-74.5, 40], // Starting position [lng, lat]
+                            zoom: 9 // Starting zoom
+                        });
+                        
+                        // Add delivery route and markers in a real implementation
+                    });
+                });
+            });
+            
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+</body>
+</html>

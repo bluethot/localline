@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmChain | Register</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .register-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .register-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .register-header img {
+            height: 60px;
+            margin-bottom: 1rem;
+        }
+        .register-header h2 {
+            color: var(--primary-green);
+            font-weight: 700;
+        }
+        .form-control:focus {
+            border-color: var(--light-green);
+            box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+        }
+        .btn-register {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            border: none;
+            width: 100%;
+        }
+        .btn-register:hover {
+            background-color: var(--dark-green);
+            color: white;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .divider-text {
+            padding: 0 1rem;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        .account-type-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .account-type-btn {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #dee2e6;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .account-type-btn:first-child {
+            border-radius: 30px 0 0 30px;
+        }
+        .account-type-btn:last-child {
+            border-radius: 0 30px 30px 0;
+        }
+        .account-type-btn.active {
+            background-color: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+        }
+        .password-strength {
+            height: 5px;
+            background-color: #e9ecef;
+            margin-top: 0.5rem;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #dc3545;
+            transition: width 0.3s ease;
+        }
+        .register-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #6c757d;
+        }
+        .register-footer a {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .register-footer a:hover {
+            text-decoration: underline;
+        }
+        .hero-side {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        .hero-side h2 {
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        .hero-side p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .farmer-fields, .consumer-fields {
+            display: none;
+        }
+        .farmer-fields.show, .consumer-fields.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Side - Registration Form -->
+            <div class="col-lg-6 d-flex align-items-center justify-content-center py-5">
+                <div class="register-container">
+                    <div class="register-header">
+                        <img src="https://via.placeholder.com/150x50?text=FarmChain" alt="FarmChain Logo">
+                        <h2>Join FarmChain</h2>
+                        <p>Create your account to start exploring transparent food sources</p>
+                    </div>
+                    
+                    <!-- Account Type Selector -->
+                    <div class="account-type-selector">
+                        <button type="button" class="account-type-btn active" data-account-type="consumer">I'm a Consumer</button>
+                        <button type="button" class="account-type-btn" data-account-type="farmer">I'm a Farmer</button>
+                    </div>
+                    
+                    <form id="registrationForm">
+                        <!-- Common Fields -->
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" required>
+                            <div class="password-strength mt-2">
+                                <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                            </div>
+                            <small class="text-muted">At least 8 characters with a mix of letters, numbers, and symbols</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                        
+                        <!-- Consumer Specific Fields -->
+                        <div class="consumer-fields show">
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location (City/Zip)</label>
+                                <input type="text" class="form-control" id="location">
+                                <small class="text-muted">Helps us show you nearby farms</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="dietaryPreferences" class="form-label">Dietary Preferences</label>
+                                <select class="form-select" id="dietaryPreferences" multiple>
+                                    <option value="organic">Organic</option>
+                                    <option value="vegetarian">Vegetarian</option>
+                                    <option value="vegan">Vegan</option>
+                                    <option value="gluten-free">Gluten-Free</option>
+                                    <option value="local">Local Produce</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Farmer Specific Fields -->
+                        <div class="farmer-fields">
+                            <div class="mb-3">
+                                <label for="farmName" class="form-label">Farm Name</label>
+                                <input type="text" class="form-control" id="farmName">
+                            </div>
+                            <div class="mb-3">
+                                <label for="farmLocation" class="form-label">Farm Location (Address)</label>
+                                <input type="text" class="form-control" id="farmLocation">
+                            </div>
+                            <div class="mb-3">
+                                <label for="farmType" class="form-label">Farm Type</label>
+                                <select class="form-select" id="farmType">
+                                    <option value="">Select farm type</option>
+                                    <option value="vegetable">Vegetable Farm</option>
+                                    <option value="fruit">Fruit Orchard</option>
+                                    <option value="dairy">Dairy Farm</option>
+                                    <option value="poultry">Poultry Farm</option>
+                                    <option value="mixed">Mixed Farming</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="certifications" class="form-label">Certifications</label>
+                                <select class="form-select" id="certifications" multiple>
+                                    <option value="organic">Organic Certified</option>
+                                    <option value="non-gmo">Non-GMO Project Verified</option>
+                                    <option value="fairtrade">Fair Trade</option>
+                                    <option value="regenerative">Regenerative Organic</option>
+                                    <option value="animal-welfare">Animal Welfare Approved</option>
+                                </select>
+                                <small class="text-muted">Hold Ctrl/Cmd to select multiple</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="farmDescription" class="form-label">Farm Description</label>
+                                <textarea class="form-control" id="farmDescription" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label" for="terms">I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Service</a> and <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a></label>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="newsletter" checked>
+                            <label class="form-check-label" for="newsletter">Subscribe to our newsletter for updates and farm stories</label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-register mb-3">Create Account</button>
+                        
+                        <div class="register-footer">
+                            <p>Already have an account? <a href="login.html">Log in</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Right Side - Hero Image -->
+            <div class="col-lg-6 d-none d-lg-block hero-side">
+                <div>
+                    <h2>Join Our Transparent Food Community</h2>
+                    <p>As a consumer, discover the story behind your food. As a farmer, connect directly with customers who value your sustainable practices.</p>
+                    <div class="mt-5 text-start" style="max-width: 500px; margin: 0 auto;">
+                        <div class="d-flex mb-4">
+                            <div class="me-3">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5>Verified Sources</h5>
+                                <p>All farms are blockchain-verified for authenticity and sustainable practices.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex mb-4">
+                            <div class="me-3">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5>Fair Pricing</h5>
+                                <p>Farmers receive 20-40% more by selling directly to consumers.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-leaf fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5>Sustainable Future</h5>
+                                <p>Support ethical farming and reduce food supply chain waste.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Terms of Service</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>1. Acceptance of Terms</h6>
+                    <p>By accessing or using FarmChain, you agree to be bound by these Terms of Service...</p>
+                    
+                    <h6>2. User Accounts</h6>
+                    <p>You are responsible for maintaining the confidentiality of your account and password...</p>
+                    
+                    <h6>3. Blockchain Transactions</h6>
+                    <p>All transactions on FarmChain are recorded on the blockchain and cannot be altered...</p>
+                    
+                    <h6>4. Farmer Verification</h6>
+                    <p>Farmers must provide accurate information about their farming practices...</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Modal -->
+    <div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Privacy Policy</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>1. Information We Collect</h6>
+                    <p>We collect personal information when you register, make purchases, or interact with our platform...</p>
+                    
+                    <h6>2. How We Use Information</h6>
+                    <p>Your information is used to provide services, verify transactions, and improve FarmChain...</p>
+                    
+                    <h6>3. Blockchain Transparency</h6>
+                    <p>Certain transaction details are recorded on the blockchain and are permanently visible...</p>
+                    
+                    <h6>4. Data Security</h6>
+                    <p>We implement industry-standard security measures to protect your information...</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Account type selection
+        document.querySelectorAll('.account-type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.account-type-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const accountType = this.dataset.accountType;
+                document.querySelectorAll('.farmer-fields, .consumer-fields').forEach(el => el.classList.remove('show'));
+                
+                if (accountType === 'farmer') {
+                    document.querySelector('.farmer-fields').classList.add('show');
+                } else {
+                    document.querySelector('.consumer-fields').classList.add('show');
+                }
+            });
+        });
+        
+        // Password strength indicator
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('passwordStrengthBar');
+            let strength = 0;
+            
+            // Length check
+            if (password.length >= 8) strength += 20;
+            if (password.length >= 12) strength += 20;
+            
+            // Character diversity
+            if (/[A-Z]/.test(password)) strength += 20;
+            if (/[0-9]/.test(password)) strength += 20;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 20;
+            
+            // Update strength bar
+            strengthBar.style.width = strength + '%';
+            
+            // Change color based on strength
+            if (strength < 40) {
+                strengthBar.style.backgroundColor = '#dc3545'; // Red
+            } else if (strength < 80) {
+                strengthBar.style.backgroundColor = '#ffc107'; // Yellow
+            } else {
+                strengthBar.style.backgroundColor = '#28a745'; // Green
+            }
+        });
+        
+        // Form validation
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            // Check password strength
+            if (password.length < 8) {
+                alert('Password must be at least 8 characters long');
+                return;
+            }
+            
+            // Check terms acceptance
+            if (!document.getElementById('terms').checked) {
+                alert('You must accept the Terms of Service to continue');
+                return;
+            }
+            
+            // Form is valid - proceed with registration
+            const accountType = document.querySelector('.account-type-btn.active').dataset.accountType;
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                password: password,
+                accountType: accountType,
+                newsletter: document.getElementById('newsletter').checked
+            };
+            
+            // Add account type specific fields
+            if (accountType === 'farmer') {
+                formData.farmName = document.getElementById('farmName').value;
+                formData.farmLocation = document.getElementById('farmLocation').value;
+                formData.farmType = document.getElementById('farmType').value;
+                formData.certifications = Array.from(document.getElementById('certifications').selectedOptions).map(o => o.value);
+                formData.farmDescription = document.getElementById('farmDescription').value;
+            } else {
+                formData.location = document.getElementById('location').value;
+                formData.dietaryPreferences = Array.from(document.getElementById('dietaryPreferences').selectedOptions).map(o => o.value);
+            }
+            
+            // Here you would typically send the data to your backend
+            console.log('Registration data:', formData);
+            
+            // For demo purposes, we'll just show a success message
+            alert(`Registration successful! Welcome to FarmChain as a ${accountType}. Redirecting to dashboard...`);
+            
+            // Redirect to appropriate dashboard
+            setTimeout(() => {
+                window.location.href = accountType === 'farmer' ? 'farmer-dashboard.html' : 'consumer-dashboard.html';
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

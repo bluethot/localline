@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmChain - Inventory Management</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+        }
+        .sidebar {
+            height: 100vh;
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--primary-green) 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 8px;
+        }
+        .stat-card {
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .inventory-card {
+            transition: all 0.3s ease;
+        }
+        .inventory-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .low-stock {
+            border-left: 4px solid #FFC107;
+        }
+        .critical-stock {
+            border-left: 4px solid #DC3545;
+        }
+        .good-stock {
+            border-left: 4px solid #28A745;
+        }
+        .inventory-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .progress-thin {
+            height: 6px;
+        }
+        .batch-badge {
+            font-size: 0.75rem;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+        .stock-alert {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar text-white p-0">
+                <div class="p-3">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-leaf me-2"></i>FarmChain
+                    </h4>
+                    <hr class="bg-light">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="product.html">
+                                <i class="fas fa-apple-alt"></i> Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="order.html">
+                                <i class="fas fa-shopping-bag"></i> Orders
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="inventory.html">
+                                <i class="fas fa-boxes"></i> Inventory
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="analytics.html">
+                                <i class="fas fa-chart-line"></i> Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="farm-profile.html">
+                                <i class="fas fa-tractor"></i> Farm Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="payments.html">
+                                <i class="fas fa-wallet"></i> Payments
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Top Bar -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Inventory Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="connectWalletBtn">
+                                <i class="fas fa-wallet me-1"></i>
+                                <span id="walletStatus">Connect Wallet</span>
+                            </button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i> Sunny Acres Farm
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Sign out</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Products</h6>
+                                        <h3 class="mb-0" id="totalProducts">24</h3>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-apple-alt text-primary"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 3 new this month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Inventory Value</h6>
+                                        <h3 class="mb-0" id="totalValue">$4,287</h3>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-dollar-sign text-success"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 8% from last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Low Stock Items</h6>
+                                        <h3 class="mb-0" id="lowStockItems">5</h3>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                                    </div>
+                                </div>
+                                <p class="text-danger small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> Needs attention
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Expiring Soon</h6>
+                                        <h3 class="mb-0" id="expiringSoon">3</h3>
+                                    </div>
+                                    <div class="bg-danger bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-clock text-danger"></i>
+                                    </div>
+                                </div>
+                                <p class="text-danger small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> Check immediately
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Management Content -->
+                <div class="row">
+                    <!-- Inventory List -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Current Inventory</h5>
+                                <div>
+                                    <button class="btn btn-sm btn-success me-2" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
+                                        <i class="fas fa-plus me-1"></i> Add Inventory
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importInventoryModal">
+                                        <i class="fas fa-file-import me-1"></i> Import
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Category</th>
+                                                <th>Stock</th>
+                                                <th>Value</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="inventoryTable">
+                                            <!-- Inventory items will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <nav aria-label="Inventory pagination">
+                                    <ul class="pagination justify-content-center mt-3">
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                        </li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#">Next</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Alerts and Analytics -->
+                    <div class="col-lg-4 mb-4">
+                        <!-- Inventory Alerts -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Inventory Alerts</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning d-flex align-items-center mb-3 stock-alert">
+                                    <i class="fas fa-exclamation-triangle me-3 fa-2x"></i>
+                                    <div>
+                                        <strong>Low Stock Warning</strong>
+                                        <div class="small">5 items below minimum stock levels</div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-danger d-flex align-items-center mb-3 stock-alert">
+                                    <i class="fas fa-skull-crossbones me-3 fa-2x"></i>
+                                    <div>
+                                        <strong>Critical Stock</strong>
+                                        <div class="small">2 items nearly out of stock</div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info d-flex align-items-center">
+                                    <i class="fas fa-clock me-3 fa-2x"></i>
+                                    <div>
+                                        <strong>Expiring Soon</strong>
+                                        <div class="small">3 items expiring in next 7 days</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inventory Value Chart -->
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Inventory Value</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="inventoryValueChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Inventory -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Batch Inventory</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Batch ID</th>
+                                        <th>Product</th>
+                                        <th>Harvest Date</th>
+                                        <th>Expiry Date</th>
+                                        <th>Quantity</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="batchInventoryTable">
+                                    <!-- Batch inventory will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Inventory Modal -->
+    <div class="modal fade" id="addInventoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Inventory</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="inventoryForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Product</label>
+                                <select class="form-select" required>
+                                    <option value="">Select product</option>
+                                    <option>Organic Strawberries</option>
+                                    <option>Free-Range Eggs</option>
+                                    <option>Heirloom Tomatoes</option>
+                                    <option>Raw Honey</option>
+                                    <option>Artisan Bread</option>
+                                    <option>Fresh Milk</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" required>
+                                    <option value="">Select category</option>
+                                    <option>Fruits</option>
+                                    <option>Vegetables</option>
+                                    <option>Dairy</option>
+                                    <option>Meat</option>
+                                    <option>Grains</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Unit</label>
+                                <select class="form-select" required>
+                                    <option>lbs</option>
+                                    <option>kg</option>
+                                    <option>units</option>
+                                    <option>dozen</option>
+                                    <option>bunch</option>
+                                    <option>gallon</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Unit Cost</label>
+                                <input type="number" step="0.01" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Harvest Date</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Expiry Date</label>
+                                <input type="date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Storage Location</label>
+                                <select class="form-select" required>
+                                    <option>Cold Storage A</option>
+                                    <option>Cold Storage B</option>
+                                    <option>Dry Storage</option>
+                                    <option>Shelving Unit 1</option>
+                                    <option>Shelving Unit 2</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Batch ID</label>
+                                <input type="text" class="form-control" placeholder="Auto-generated if empty">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-control" rows="3" placeholder="Any special notes about this inventory"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-save me-2"></i> Add to Inventory
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Inventory Modal -->
+    <div class="modal fade" id="importInventoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Import Inventory</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6>Download Template</h6>
+                        <p class="small text-muted">Use our template to ensure your data imports correctly</p>
+                        <a href="#" class="btn btn-outline-success">
+                            <i class="fas fa-file-excel me-2"></i> Download CSV Template
+                        </a>
+                    </div>
+                    <form id="importForm">
+                        <div class="mb-3">
+                            <label class="form-label">Upload Inventory File</label>
+                            <input type="file" class="form-control" accept=".csv, .xlsx">
+                            <div class="form-text">Supported formats: CSV, Excel</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Import Type</label>
+                            <select class="form-select">
+                                <option>Add new inventory only</option>
+                                <option>Update existing and add new</option>
+                                <option>Replace all inventory</option>
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-file-import me-2"></i> Import Inventory
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Detail Modal -->
+    <div class="modal fade" id="inventoryDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inventoryDetailTitle">Inventory Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="inventoryDetailContent">
+                    <!-- Content will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Current inventory data
+        let inventory = [];
+        let batches = [];
+
+        // Initialize inventory page when DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInventoryData();
+            setupInventoryCharts();
+            setupEventListeners();
+        });
+
+        // Sample inventory data
+        const sampleInventory = [
+            {
+                id: 1,
+                productId: 1,
+                name: "Organic Strawberries",
+                category: "Fruits",
+                image: "strawberries.jpg",
+                currentStock: 28,
+                unit: "lb",
+                unitCost: 2.50,
+                totalValue: 70.00,
+                minStock: 30,
+                maxStock: 100,
+                status: "low",
+                batches: [
+                    { batchId: "STRAW-0623-01", quantity: 15, harvestDate: "2023-06-05", expiryDate: "2023-06-19", location: "Cold Storage A" },
+                    { batchId: "STRAW-0623-02", quantity: 13, harvestDate: "2023-06-10", expiryDate: "2023-06-24", location: "Cold Storage A" }
+                ]
+            },
+            {
+                id: 2,
+                productId: 2,
+                name: "Free-Range Eggs",
+                category: "Dairy",
+                image: "eggs.jpg",
+                currentStock: 42,
+                unit: "dozen",
+                unitCost: 3.00,
+                totalValue: 126.00,
+                minStock: 20,
+                maxStock: 80,
+                status: "good",
+                batches: [
+                    { batchId: "EGGS-0623-01", quantity: 25, harvestDate: "2023-06-03", expiryDate: "2023-06-24", location: "Cold Storage B" },
+                    { batchId: "EGGS-0623-02", quantity: 17, harvestDate: "2023-06-10", expiryDate: "2023-07-01", location: "Cold Storage B" }
+                ]
+            },
+            {
+                id: 3,
+                productId: 3,
+                name: "Heirloom Tomatoes",
+                category: "Vegetables",
+                image: "tomatoes.jpg",
+                currentStock: 5,
+                unit: "lb",
+                unitCost: 1.75,
+                totalValue: 8.75,
+                minStock: 10,
+                maxStock: 50,
+                status: "critical",
+                batches: [
+                    { batchId: "TOMAT-0623-01", quantity: 5, harvestDate: "2023-06-08", expiryDate: "2023-06-15", location: "Cold Storage A" }
+                ]
+            },
+            {
+                id: 4,
+                productId: 4,
+                name: "Raw Honey",
+                category: "Other",
+                image: "honey.jpg",
+                currentStock: 15,
+                unit: "jar",
+                unitCost: 8.00,
+                totalValue: 120.00,
+                minStock: 5,
+                maxStock: 30,
+                status: "good",
+                batches: [
+                    { batchId: "HONEY-0523-01", quantity: 15, harvestDate: "2023-05-15", expiryDate: "2024-05-15", location: "Shelving Unit 1" }
+                ]
+            },
+            {
+                id: 5,
+                productId: 5,
+                name: "Artisan Bread",
+                category: "Grains",
+                image: "bread.jpg",
+                currentStock: 8,
+                unit: "loaf",
+                unitCost: 4.50,
+                totalValue: 36.00,
+                minStock: 5,
+                maxStock: 20,
+                status: "good",
+                batches: [
+                    { batchId: "BREAD-0623-01", quantity: 8, harvestDate: "2023-06-12", expiryDate: "2023-06-16", location: "Shelving Unit 2" }
+                ]
+            },
+            {
+                id: 6,
+                productId: 6,
+                name: "Fresh Milk",
+                category: "Dairy",
+                image: "milk.jpg",
+                currentStock: 3,
+                unit: "gallon",
+                unitCost: 5.00,
+                totalValue: 15.00,
+                minStock: 5,
+                maxStock: 15,
+                status: "critical",
+                batches: [
+                    { batchId: "MILK-0623-01", quantity: 3, harvestDate: "2023-06-14", expiryDate: "2023-06-21", location: "Cold Storage B" }
+                ]
+            }
+        ];
+
+        // Sample batch data (expanded from inventory batches)
+        const sampleBatches = [
+            {
+                batchId: "STRAW-0623-01",
+                productId: 1,
+                productName: "Organic Strawberries",
+                quantity: 15,
+                unit: "lb",
+                harvestDate: "2023-06-05",
+                expiryDate: "2023-06-19",
+                location: "Cold Storage A",
+                status: "active",
+                notes: "First harvest of the season"
+            },
+            {
+                batchId: "STRAW-0623-02",
+                productId: 1,
+                productName: "Organic Strawberries",
+                quantity: 13,
+                unit: "lb",
+                harvestDate: "2023-06-10",
+                expiryDate: "2023-06-24",
+                location: "Cold Storage A",
+                status: "active",
+                notes: ""
+            },
+            {
+                batchId: "EGGS-0623-01",
+                productId: 2,
+                productName: "Free-Range Eggs",
+                quantity: 25,
+                unit: "dozen",
+                harvestDate: "2023-06-03",
+                expiryDate: "2023-06-24",
+                location: "Cold Storage B",
+                status: "active",
+                notes: ""
+            },
+            {
+                batchId: "EGGS-0623-02",
+                productId: 2,
+                productName: "Free-Range Eggs",
+                quantity: 17,
+                unit: "dozen",
+                harvestDate: "2023-06-10",
+                expiryDate: "2023-07-01",
+                location: "Cold Storage B",
+                status: "active",
+                notes: ""
+            },
+            {
+                batchId: "TOMAT-0623-01",
+                productId: 3,
+                productName: "Heirloom Tomatoes",
+                quantity: 5,
+                unit: "lb",
+                harvestDate: "2023-06-08",
+                expiryDate: "2023-06-15",
+                location: "Cold Storage A",
+                status: "expiring",
+                notes: "Needs to be sold or processed soon"
+            },
+            {
+                batchId: "HONEY-0523-01",
+                productId: 4,
+                productName: "Raw Honey",
+                quantity: 15,
+                unit: "jar",
+                harvestDate: "2023-05-15",
+                expiryDate: "2024-05-15",
+                location: "Shelving Unit 1",
+                status: "active",
+                notes: "Long shelf life"
+            },
+            {
+                batchId: "BREAD-0623-01",
+                productId: 5,
+                productName: "Artisan Bread",
+                quantity: 8,
+                unit: "loaf",
+                harvestDate: "2023-06-12",
+                expiryDate: "2023-06-16",
+                location: "Shelving Unit 2",
+                status: "active",
+                notes: ""
+            },
+            {
+                batchId: "MILK-0623-01",
+                productId: 6,
+                productName: "Fresh Milk",
+                quantity: 3,
+                unit: "gallon",
+                harvestDate: "2023-06-14",
+                expiryDate: "2023-06-21",
+                location: "Cold Storage B",
+                status: "active",
+                notes: ""
+            }
+        ];
+
+        // Load inventory data
+        function loadInventoryData() {
+            inventory = [...sampleInventory];
+            batches = [...sampleBatches];
+            renderInventoryTable(inventory);
+            renderBatchTable(batches);
+            updateInventoryStats(inventory);
+        }
+
+        // Render inventory table
+        function renderInventoryTable(inventoryData) {
+            const inventoryTable = document.getElementById('inventoryTable');
+            inventoryTable.innerHTML = '';
+
+            if (inventoryData.length === 0) {
+                inventoryTable.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="fas fa-box-open fa-2x text-muted mb-3"></i>
+                            <h5>No inventory items found</h5>
+                            <p class="text-muted">Add your first inventory item to get started</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            inventoryData.forEach(item => {
+                // Determine stock status and progress
+                let stockStatus = '';
+                let progressClass = '';
+                let progressValue = 0;
+                
+                if (item.status === 'critical') {
+                    stockStatus = '<span class="badge bg-danger">Critical</span>';
+                    progressClass = 'bg-danger';
+                    progressValue = (item.currentStock / item.minStock) * 100;
+                } else if (item.status === 'low') {
+                    stockStatus = '<span class="badge bg-warning text-dark">Low</span>';
+                    progressClass = 'bg-warning';
+                    progressValue = (item.currentStock / item.minStock) * 100;
+                } else {
+                    stockStatus = '<span class="badge bg-success">Good</span>';
+                    progressClass = 'bg-success';
+                    progressValue = (item.currentStock / item.maxStock) * 100;
+                }
+                
+                // Determine card class based on status
+                let cardClass = '';
+                if (item.status === 'critical') {
+                    cardClass = 'critical-stock';
+                } else if (item.status === 'low') {
+                    cardClass = 'low-stock';
+                } else {
+                    cardClass = 'good-stock';
+                }
+
+                const row = document.createElement('tr');
+                row.className = `inventory-card ${cardClass}`;
+                row.setAttribute('data-item-id', item.id);
+                row.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="assets/${item.image}" class="inventory-img me-3" alt="${item.name}">
+                            <div>
+                                <h6 class="mb-1">${item.name}</h6>
+                                <small class="text-muted">${item.category}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${item.category}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1 me-3">
+                                <div class="progress progress-thin">
+                                    <div class="progress-bar ${progressClass}" role="progressbar" style="width: ${progressValue}%"></div>
+                                </div>
+                                <small>${item.currentStock} ${item.unit} of ${item.maxStock} ${item.unit}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>$${item.totalValue.toFixed(2)}</td>
+                    <td>${stockStatus}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewInventoryDetails(${item.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                inventoryTable.appendChild(row);
+            });
+
+            // Add click event to all inventory rows
+            document.querySelectorAll('.inventory-card').forEach(row => {
+                row.addEventListener('click', function() {
+                    const itemId = this.getAttribute('data-item-id');
+                    viewInventoryDetails(itemId);
+                });
+            });
+        }
+
+        // Render batch table
+        function renderBatchTable(batchData) {
+            const batchTable = document.getElementById('batchInventoryTable');
+            batchTable.innerHTML = '';
+
+            if (batchData.length === 0) {
+                batchTable.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-boxes fa-2x text-muted mb-3"></i>
+                            <h5>No batch inventory found</h5>
+                            <p class="text-muted">Add inventory to see batch information</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            batchData.forEach(batch => {
+                // Determine status badge
+                let statusBadge = '';
+                const today = new Date();
+                const expiryDate = new Date(batch.expiryDate);
+                const daysToExpiry = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
+                
+                if (batch.status === 'expiring' || daysToExpiry <= 3) {
+                    statusBadge = '<span class="badge bg-danger">Expiring</span>';
+                } else if (daysToExpiry <= 7) {
+                    statusBadge = '<span class="badge bg-warning text-dark">Soon</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-success">Good</span>';
+                }
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="badge batch-badge bg-light text-dark">${batch.batchId}</span></td>
+                    <td>${batch.productName}</td>
+                    <td>${new Date(batch.harvestDate).toLocaleDateString()}</td>
+                    <td>${new Date(batch.expiryDate).toLocaleDateString()} <small class="text-muted">(${daysToExpiry} days)</small></td>
+                    <td>${batch.quantity} ${batch.unit}</td>
+                    <td>${batch.location}</td>
+                    <td>${statusBadge}</td>
+                `;
+                batchTable.appendChild(row);
+            });
+        }
+
+        // View inventory details
+        function viewInventoryDetails(itemId) {
+            const item = inventory.find(i => i.id == itemId);
+            if (!item) return;
+
+            // Determine stock status
+            let stockStatus = '';
+            let statusClass = '';
+            
+            if (item.status === 'critical') {
+                stockStatus = 'Critical Stock';
+                statusClass = 'text-danger';
+            } else if (item.status === 'low') {
+                stockStatus = 'Low Stock';
+                statusClass = 'text-warning';
+            } else {
+                stockStatus = 'Good Stock';
+                statusClass = 'text-success';
+            }
+
+            // Build batches list
+            let batchesList = '';
+            item.batches.forEach(batch => {
+                const expiryDate = new Date(batch.expiryDate);
+                const today = new Date();
+                const daysToExpiry = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
+                
+                let batchStatus = '';
+                if (daysToExpiry <= 3) {
+                    batchStatus = '<span class="badge bg-danger float-end">Expiring</span>';
+                } else if (daysToExpiry <= 7) {
+                    batchStatus = '<span class="badge bg-warning text-dark float-end">Soon</span>';
+                } else {
+                    batchStatus = '<span class="badge bg-success float-end">Good</span>';
+                }
+                
+                batchesList += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>${batch.batchId}</strong>
+                            ${batchStatus}
+                        </div>
+                        <div class="row small mt-2">
+                            <div class="col-6">
+                                <p class="mb-1"><strong>Quantity:</strong> ${batch.quantity} ${item.unit}</p>
+                                <p class="mb-1"><strong>Harvest Date:</strong> ${new Date(batch.harvestDate).toLocaleDateString()}</p>
+                            </div>
+                            <div class="col-6">
+                                <p class="mb-1"><strong>Expiry:</strong> ${new Date(batch.expiryDate).toLocaleDateString()} (${daysToExpiry} days)</p>
+                                <p class="mb-1"><strong>Location:</strong> ${batch.location}</p>
+                            </div>
+                        </div>
+                        ${batch.notes ? `<p class="small mt-1 mb-0"><strong>Notes:</strong> ${batch.notes}</p>` : ''}
+                    </div>
+                `;
+            });
+
+            // Set modal content
+            document.getElementById('inventoryDetailTitle').textContent = item.name;
+            document.getElementById('inventoryDetailContent').innerHTML = `
+                <div class="row">
+                    <div class="col-md-4">
+                        <img src="assets/${item.image}" class="img-fluid rounded mb-3" alt="${item.name}">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Quick Stats</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Current Stock:</span>
+                                    <strong>${item.currentStock} ${item.unit}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Min Stock:</span>
+                                    <strong>${item.minStock} ${item.unit}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Max Stock:</span>
+                                    <strong>${item.maxStock} ${item.unit}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Unit Cost:</span>
+                                    <strong>$${item.unitCost.toFixed(2)}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Total Value:</span>
+                                    <strong>$${item.totalValue.toFixed(2)}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">${item.name}</h5>
+                            <span class="badge ${item.status === 'critical' ? 'bg-danger' : item.status === 'low' ? 'bg-warning text-dark' : 'bg-success'}">
+                                ${stockStatus}
+                            </span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>Stock Level</h6>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar ${item.status === 'critical' ? 'bg-danger' : item.status === 'low' ? 'bg-warning' : 'bg-success'}" 
+                                     role="progressbar" 
+                                     style="width: ${(item.currentStock / item.maxStock) * 100}%">
+                                    ${item.currentStock}/${item.maxStock} ${item.unit}
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small>0 ${item.unit}</small>
+                                <small>${item.maxStock} ${item.unit}</small>
+                            </div>
+                            <div class="text-center mt-1">
+                                <small class="text-muted">Minimum stock level: ${item.minStock} ${item.unit}</small>
+                            </div>
+                        </div>
+                        
+                        <h6 class="mb-3">Batch Inventory</h6>
+                        <div class="list-group mb-3">
+                            ${batchesList}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success">
+                                <i class="fas fa-plus me-1"></i> Add More Inventory
+                            </button>
+                            <button class="btn btn-outline-secondary">
+                                <i class="fas fa-chart-line me-1"></i> View Sales History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('inventoryDetailModal'));
+            modal.show();
+        }
+
+        // Update inventory statistics
+        function updateInventoryStats(inventoryData) {
+            document.getElementById('totalProducts').textContent = inventoryData.length;
+            
+            const totalValue = inventoryData.reduce((sum, item) => sum + item.totalValue, 0);
+            document.getElementById('totalValue').textContent = `$${totalValue.toFixed(2)}`;
+            
+            const lowStockItems = inventoryData.filter(item => item.status === 'low' || item.status === 'critical').length;
+            document.getElementById('lowStockItems').textContent = lowStockItems;
+            
+            // Count expiring soon items (within 7 days)
+            const today = new Date();
+            const expiringSoon = batches.filter(batch => {
+                const expiryDate = new Date(batch.expiryDate);
+                const daysToExpiry = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
+                return daysToExpiry <= 7;
+            }).length;
+            document.getElementById('expiringSoon').textContent = expiringSoon;
+        }
+
+        // Setup inventory charts
+        function setupInventoryCharts() {
+            // Inventory Value Chart
+            const ctx = document.getElementById('inventoryValueChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fruits', 'Vegetables', 'Dairy', 'Meat', 'Grains', 'Other'],
+                    datasets: [{
+                        data: [850, 620, 730, 480, 360, 1247],
+                        backgroundColor: [
+                            '#4CAF50',
+                            '#8BC34A',
+                            '#FFC107',
+                            '#FF9800',
+                            '#795548',
+                            '#9E9E9E'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Connect wallet
+            document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
+
+            // Form submission
+            document.getElementById('inventoryForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Inventory item added successfully');
+                $('#addInventoryModal').modal('hide');
+            });
+
+            // Import form submission
+            document.getElementById('importForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Inventory import started');
+                $('#importInventoryModal').modal('hide');
+            });
+        }
+
+        // Connect wallet function
+        async function connectWallet() {
+            try {
+                if (window.ethereum) {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const walletBtn = document.getElementById('connectWalletBtn');
+                    const walletStatus = document.getElementById('walletStatus');
+                    
+                    walletBtn.classList.remove('btn-outline-secondary');
+                    walletBtn.classList.add('btn-success');
+                    walletStatus.innerHTML = `${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}`;
+                    
+                    // Load farmer data from blockchain
+                    loadFarmerData(accounts[0]);
+                } else {
+                    alert('Please install MetaMask!');
+                }
+            } catch (error) {
+                console.error('Wallet connection failed:', error);
+            }
+        }
+
+        // Load farmer data from blockchain
+        async function loadFarmerData(walletAddress) {
+            // In a real app, you would query your smart contract
+            console.log(`Loading data for farmer: ${walletAddress}`);
+        }
+    </script>
+</body>
+</html>

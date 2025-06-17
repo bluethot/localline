@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmChain | Restaurant Dashboard</title>
+    
+    <!-- Shared CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    
+    <!-- Dashboard-specific CSS -->
+    <style>
+        .dashboard-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-green);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .order-card {
+            border-left: 3px solid var(--primary-green);
+        }
+        
+        .order-card.urgent {
+            border-left: 3px solid #dc3545;
+        }
+        
+        .delivery-progress {
+            height: 6px;
+        }
+        
+        .inventory-low {
+            background-color: #fff3cd;
+        }
+        
+        .menu-item-card {
+            transition: all 0.3s ease;
+        }
+        
+        .menu-item-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .ingredient-chart-container {
+            height: 300px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-sidebar {
+                position: static;
+                height: auto;
+            }
+        }
+    </style>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Dashboard Layout -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-2 dashboard-sidebar bg-white p-0 border-end" style="position: fixed; height: 100vh;">
+                <div class="p-4 text-center border-bottom">
+                    <img src="logo.png" alt="FarmChain" height="40" class="mb-3">
+                    <h5 class="mb-0">The Bistro Restaurant</h5>
+                    <small class="text-muted">Premium Account</small>
+                </div>
+                
+                <nav class="nav flex-column p-3">
+                    <a class="nav-link active" href="#" aria-current="page">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </a>
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-shopping-basket me-2"></i> Orders
+                    </a>
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-truck me-2"></i> Deliveries
+                    </a>
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-warehouse me-2"></i> Inventory
+                    </a>
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-utensils me-2"></i> Menu Items
+                    </a>
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-chart-pie me-2"></i> Analytics
+                    </a>
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-file-invoice-dollar me-2"></i> Invoices
+                    </a>
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-cog me-2"></i> Settings
+                    </a>
+                    
+                    <div class="mt-4 pt-3 border-top">
+                        <a class="nav-link text-danger" href="#">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-10 ms-auto p-0">
+                <!-- Top Navigation -->
+                <header class="dashboard-header sticky-top p-3 d-flex justify-content-between align-items-center">
+                    <h1 class="h4 mb-0">Restaurant Dashboard</h1>
+                    <div class="d-flex align-items-center">
+                        <div class="dropdown me-3">
+                            <button class="btn btn-light dropdown-toggle" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bell"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                                <li><h6 class="dropdown-header">Notifications</h6></li>
+                                <li><a class="dropdown-item" href="#">Delivery arriving today</a></li>
+                                <li><a class="dropdown-item" href="#">New seasonal produce available</a></li>
+                                <li><a class="dropdown-item" href="#">Inventory low: Organic chicken</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">View all notifications</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="images/restaurant-owner.jpg" class="rounded-circle me-2" width="32" height="32" alt="User">
+                                <span>Chef Maria</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="#">My Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Account Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </header>
+                
+                <!-- Dashboard Content -->
+                <main class="p-4">
+                    <!-- Stats Overview -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="stat-card card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Weekly Spend</h6>
+                                            <h3 class="mb-0">$1,245</h3>
+                                        </div>
+                                        <div class="bg-success bg-opacity-10 p-2 rounded">
+                                            <i class="fas fa-dollar-sign text-success"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-success"><i class="fas fa-arrow-up"></i> 12% from last week</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3">
+                            <div class="stat-card card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Active Orders</h6>
+                                            <h3 class="mb-0">4</h3>
+                                        </div>
+                                        <div class="bg-primary bg-opacity-10 p-2 rounded">
+                                            <i class="fas fa-shopping-basket text-primary"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-danger"><i class="fas fa-exclamation-circle"></i> 1 requires attention</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3">
+                            <div class="stat-card card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Inventory Items</h6>
+                                            <h3 class="mb-0">87</h3>
+                                        </div>
+                                        <div class="bg-warning bg-opacity-10 p-2 rounded">
+                                            <i class="fas fa-box-open text-warning"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-danger"><i class="fas fa-exclamation-circle"></i> 5 items low</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3">
+                            <div class="stat-card card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="text-muted mb-2">Savings This Month</h6>
+                                            <h3 class="mb-0">$420</h3>
+                                        </div>
+                                        <div class="bg-info bg-opacity-10 p-2 rounded">
+                                            <i class="fas fa-piggy-bank text-info"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-success"><i class="fas fa-arrow-up"></i> 8% from last month</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Orders & Deliveries -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-8">
+                            <div class="card h-100">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Recent Orders</h5>
+                                    <a href="#" class="btn btn-sm btn-outline-success">View All</a>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order #</th>
+                                                    <th>Date</th>
+                                                    <th>Supplier</th>
+                                                    <th>Items</th>
+                                                    <th>Total</th>
+                                                    <th>Status</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="order-card urgent">
+                                                    <td>#FC-4892</td>
+                                                    <td>Today</td>
+                                                    <td>Sunny Acres</td>
+                                                    <td>8</td>
+                                                    <td>$286.50</td>
+                                                    <td><span class="badge bg-warning">Processing</span></td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-primary">Track</button>
+                                                    </td>
+                                                </tr>
+                                                <tr class="order-card">
+                                                    <td>#FC-4881</td>
+                                                    <td>Yesterday</td>
+                                                    <td>Valley Harvest</td>
+                                                    <td>12</td>
+                                                    <td>$412.75</td>
+                                                    <td><span class="badge bg-success">Delivered</span></td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-secondary">Details</button>
+                                                    </td>
+                                                </tr>
+                                                <tr class="order-card">
+                                                    <td>#FC-4875</td>
+                                                    <td>Jun 12</td>
+                                                    <td>Green Pastures</td>
+                                                    <td>5</td>
+                                                    <td>$158.20</td>
+                                                    <td><span class="badge bg-success">Delivered</span></td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-secondary">Details</button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0">Upcoming Deliveries</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h6 class="mb-0">Today, 9-11 AM</h6>
+                                            <small class="text-muted">ETA: 45 min</small>
+                                        </div>
+                                        <p class="mb-2">Sunny Acres Farm</p>
+                                        <div class="progress delivery-progress mb-2">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <small>8 items</small>
+                                            <small>$286.50</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h6 class="mb-0">Tomorrow, 7-9 AM</h6>
+                                        </div>
+                                        <p class="mb-2">Valley Harvest Farm</p>
+                                        <div class="d-flex justify-content-between">
+                                            <small>12 items</small>
+                                            <small>$412.75</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h6 class="mb-0">Friday, 10-12 PM</h6>
+                                        </div>
+                                        <p class="mb-2">Green Pastures Ranch</p>
+                                        <div class="d-flex justify-content-between">
+                                            <small>5 items</small>
+                                            <small>$158.20</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <a href="#" class="btn btn-sm btn-outline-success w-100 mt-3">View Schedule</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Inventory Alerts & Menu Items -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Inventory Alerts</h5>
+                                    <a href="#" class="btn btn-sm btn-outline-success">Manage Inventory</a>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ingredient</th>
+                                                    <th>Stock</th>
+                                                    <th>Last Delivery</th>
+                                                    <th>Usage/Day</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="inventory-low">
+                                                    <td>Organic Chicken Breast</td>
+                                                    <td>12 lbs</td>
+                                                    <td>Jun 10</td>
+                                                    <td>5 lbs</td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-success">Reorder</button>
+                                                    </td>
+                                                </tr>
+                                                <tr class="inventory-low">
+                                                    <td>Heirloom Tomatoes</td>
+                                                    <td>8 lbs</td>
+                                                    <td>Jun 12</td>
+                                                    <td>6 lbs</td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-success">Reorder</button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Mixed Greens</td>
+                                                    <td>15 lbs</td>
+                                                    <td>Jun 14</td>
+                                                    <td>4 lbs</td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-secondary">Monitor</button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Artisan Bread</td>
+                                                    <td>20 loaves</td>
+                                                    <td>Jun 15</td>
+                                                    <td>8 loaves</td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-secondary">Monitor</button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Top Menu Items</h5>
+                                    <a href="#" class="btn btn-sm btn-outline-success">View Menu</a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-6 col-md-4">
+                                            <div class="menu-item-card card border-0 text-center">
+                                                <img src="images/menu-item1.jpg" class="card-img-top rounded" alt="Farm Salad" loading="lazy">
+                                                <div class="card-body p-2">
+                                                    <h6 class="mb-0">Farm Salad</h6>
+                                                    <small class="text-muted">Uses 5 ingredients</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4">
+                                            <div class="menu-item-card card border-0 text-center">
+                                                <img src="images/menu-item2.jpg" class="card-img-top rounded" alt="Grilled Chicken" loading="lazy">
+                                                <div class="card-body p-2">
+                                                    <h6 class="mb-0">Grilled Chicken</h6>
+                                                    <small class="text-muted">Uses 3 ingredients</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4">
+                                            <div class="menu-item-card card border-0 text-center">
+                                                <img src="images/menu-item3.jpg" class="card-img-top rounded" alt="Tomato Soup" loading="lazy">
+                                                <div class="card-body p-2">
+                                                    <h6 class="mb-0">Tomato Soup</h6>
+                                                    <small class="text-muted">Uses 4 ingredients</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Most Used Ingredient:</h6>
+                                                <p class="mb-0">Heirloom Tomatoes</p>
+                                            </div>
+                                            <button class="btn btn-sm btn-success">Adjust Menu</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ingredient Usage Analytics -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Ingredient Usage Analytics</h5>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-success active">Weekly</button>
+                                        <button type="button" class="btn btn-sm btn-outline-success">Monthly</button>
+                                        <button type="button" class="btn btn-sm btn-outline-success">Seasonal</button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="ingredient-chart-container">
+                                        <canvas id="ingredientChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ingredient Usage Chart
+            const ctx = document.getElementById('ingredientChart').getContext('2d');
+            const ingredientChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Organic Chicken', 'Heirloom Tomatoes', 'Mixed Greens', 'Artisan Bread', 'Fresh Herbs', 'Dairy'],
+                    datasets: [{
+                        label: 'Current Stock (lbs)',
+                        data: [12, 8, 15, 20, 5, 18],
+                        backgroundColor: 'rgba(76, 175, 80, 0.7)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Weekly Usage (lbs)',
+                        data: [35, 42, 28, 56, 14, 30],
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Pounds (lbs)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + ' lbs';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+</body>
+</html>

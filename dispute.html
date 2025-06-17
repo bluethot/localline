@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispute Resolution | FarmChain Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+            --sidebar-width: 280px;
+        }
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--primary-green) 100%);
+            width: var(--sidebar-width);
+            min-height: 100vh;
+            position: fixed;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            padding: 10px 15px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+        }
+        .stat-card {
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-open {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+        .status-investigation {
+            background-color: #CCE5FF;
+            color: #004085;
+        }
+        .status-resolved {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+        .status-rejected {
+            background-color: #F8D7DA;
+            color: #721C24;
+        }
+        .status-escalated {
+            background-color: #F5B7B1;
+            color: #78281F;
+        }
+        .priority-high {
+            border-left: 4px solid #DC3545;
+        }
+        .priority-medium {
+            border-left: 4px solid #FFC107;
+        }
+        .priority-low {
+            border-left: 4px solid #28A745;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #6c757d;
+        }
+        .search-box input {
+            padding-left: 40px;
+        }
+        .filter-dropdown .dropdown-menu {
+            width: 300px;
+            padding: 15px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        #disputesTable th {
+            white-space: nowrap;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+        .dispute-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .dispute-timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        .timeline-step {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #adb5bd;
+            border: 3px solid #e9ecef;
+        }
+        .timeline-step.completed::before {
+            background-color: var(--primary-green);
+            border-color: #D4EDDA;
+        }
+        .timeline-step.active::before {
+            background-color: #FFC107;
+            border-color: #FFF3CD;
+        }
+        .timeline-step.rejected::before {
+            background-color: #DC3545;
+            border-color: #F8D7DA;
+        }
+        .timeline-step h6 {
+            font-weight: 600;
+        }
+        .timeline-step p {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        .evidence-thumb {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .message-bubble {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .customer-message {
+            background-color: #E9ECEF;
+            margin-right: auto;
+        }
+        .farmer-message {
+            background-color: #D1E7DD;
+            margin-left: auto;
+        }
+        .admin-message {
+            background-color: #CCE5FF;
+            margin-left: auto;
+        }
+        .message-time {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-align: right;
+        }
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #F8F9FA;
+            border-radius: 8px;
+        }
+        .action-btns .btn {
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar text-white p-0">
+            <div class="p-3">
+                <h4 class="text-center mb-4">
+                    <i class="fas fa-leaf me-2"></i>FarmChain
+                </h4>
+                <hr class="bg-light">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="farmer-verification.html">
+                            <i class="fas fa-user-check"></i> Farmer Verification
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="productmoderation.html">
+                            <i class="fas fa-apple-alt"></i> Product Moderation
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="ordermanagement.html">
+                            <i class="fas fa-shopping-bag"></i> Order Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="disputes.html">
+                            <i class="fas fa-exclamation-triangle"></i> Disputes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="analytics.html">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="settings.html">
+                            <i class="fas fa-cog"></i> System Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="container-fluid px-4 py-4">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h3 mb-0">Dispute Resolution Center</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Disputes</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newDisputeModal">
+                            <i class="fas fa-plus me-2"></i>Create Dispute
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Open Disputes</h6>
+                                        <h3 class="mb-0">14</h3>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                                    </div>
+                                </div>
+                                <p class="text-danger small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 3 new today
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Under Investigation</h6>
+                                        <h3 class="mb-0">8</h3>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-search text-primary"></i>
+                                    </div>
+                                </div>
+                                <p class="text-warning small mt-2 mb-0">
+                                    <i class="fas fa-clock me-1"></i> Needs attention
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Resolved This Month</h6>
+                                        <h3 class="mb-0">23</h3>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 15% from last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Avg. Resolution Time</h6>
+                                        <h3 class="mb-0">3.2 days</h3>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-clock text-info"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-down me-1"></i> Improved by 18%
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters and Search -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" class="form-control" placeholder="Search disputes by ID, customer, or farmer..." id="searchInput">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex">
+                                    <div class="filter-dropdown me-2">
+                                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-filter me-2"></i>Filters
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                                            <h6 class="dropdown-header">Filter Options</h6>
+                                            <div class="mb-3">
+                                                <label class="form-label">Status</label>
+                                                <select class="form-select" id="statusFilter">
+                                                    <option value="">All Statuses</option>
+                                                    <option value="open">Open</option>
+                                                    <option value="investigation">Under Investigation</option>
+                                                    <option value="resolved">Resolved</option>
+                                                    <option value="rejected">Rejected</option>
+                                                    <option value="escalated">Escalated</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Dispute Type</label>
+                                                <select class="form-select" id="typeFilter">
+                                                    <option value="">All Types</option>
+                                                    <option value="quality">Product Quality</option>
+                                                    <option value="delivery">Delivery Issues</option>
+                                                    <option value="description">Misleading Description</option>
+                                                    <option value="payment">Payment Dispute</option>
+                                                    <option value="other">Other</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Priority</label>
+                                                <select class="form-select" id="priorityFilter">
+                                                    <option value="">All Priorities</option>
+                                                    <option value="high">High</option>
+                                                    <option value="medium">Medium</option>
+                                                    <option value="low">Low</option>
+                                                </select>
+                                            </div>
+                                            <button class="btn btn-sm btn-success w-100">Apply Filters</button>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline-secondary" id="exportBtn">
+                                        <i class="fas fa-download me-2"></i>Export
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disputes Table -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="disputesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Case ID</th>
+                                        <th>Order</th>
+                                        <th>Customer</th>
+                                        <th>Farmer</th>
+                                        <th>Type</th>
+                                        <th>Opened</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="priority-high">
+                                        <td>DP-1001</td>
+                                        <td>ORD-1001</td>
+                                        <td>John Smith</td>
+                                        <td>Green Valley Organics</td>
+                                        <td>Product Quality</td>
+                                        <td>2023-06-12</td>
+                                        <td><span class="badge bg-danger">High</span></td>
+                                        <td><span class="status-badge status-open">Open</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1 view-details" data-bs-toggle="modal" data-bs-target="#disputeModal">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success assign-btn">
+                                                <i class="fas fa-user-check"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr class="priority-medium">
+                                        <td>DP-1002</td>
+                                        <td>ORD-1002</td>
+                                        <td>Sarah Johnson</td>
+                                        <td>Sunny Acres Farm</td>
+                                        <td>Delivery Issues</td>
+                                        <td>2023-06-10</td>
+                                        <td><span class="badge bg-warning">Medium</span></td>
+                                        <td><span class="status-badge status-investigation">Investigation</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1 view-details" data-bs-toggle="modal" data-bs-target="#disputeModal">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success resolve-btn">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr class="priority-low">
+                                        <td>DP-1003</td>
+                                        <td>ORD-1003</td>
+                                        <td>Michael Brown</td>
+                                        <td>Pasture Prime</td>
+                                        <td>Misleading Description</td>
+                                        <td>2023-06-08</td>
+                                        <td><span class="badge bg-success">Low</span></td>
+                                        <td><span class="status-badge status-resolved">Resolved</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1 view-details" data-bs-toggle="modal" data-bs-target="#disputeModal">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <!-- More rows... -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav aria-label="Table pagination">
+                            <ul class="pagination justify-content-end mt-3">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dispute Details Modal -->
+    <div class="modal fade" id="disputeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Dispute Details - DP-1001</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Dispute Timeline -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Dispute Timeline</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="dispute-timeline">
+                                        <div class="timeline-step completed">
+                                            <h6>Dispute Opened</h6>
+                                            <p>2023-06-12 10:15 AM by customer</p>
+                                        </div>
+                                        <div class="timeline-step completed">
+                                            <h6>Farmer Responded</h6>
+                                            <p>2023-06-12 02:30 PM</p>
+                                        </div>
+                                        <div class="timeline-step active">
+                                            <h6>Under Investigation</h6>
+                                            <p>Assigned to you on 2023-06-12</p>
+                                        </div>
+                                        <div class="timeline-step">
+                                            <h6>Resolution</h6>
+                                            <p>Pending your decision</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dispute Details -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Dispute Details</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Dispute Type</label>
+                                            <input type="text" class="form-control" value="Product Quality" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Priority</label>
+                                            <input type="text" class="form-control" value="High" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Order Number</label>
+                                            <input type="text" class="form-control" value="ORD-1001" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Product</label>
+                                            <input type="text" class="form-control" value="Organic Tomatoes (5 lb)" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Customer's Claim</label>
+                                        <textarea class="form-control" rows="3" readonly>The tomatoes arrived bruised and overripe, not as described in the listing. I expected fresh, firm tomatoes suitable for salads but received produce that seems days old.</textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Farmer's Response</label>
+                                        <textarea class="form-control" rows="3" readonly>We harvest our tomatoes at peak ripeness for best flavor. The tomatoes were in perfect condition when shipped. Any damage likely occurred during transit.</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Evidence -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Evidence</h6>
+                                    <button class="btn btn-sm btn-outline-secondary">View All Evidence</button>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="mb-3">Customer's Evidence</h6>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-3">
+                                            <img src="https://via.placeholder.com/300" class="evidence-thumb" alt="Evidence photo 1">
+                                        </div>
+                                        <div class="col-3">
+                                            <img src="https://via.placeholder.com/300" class="evidence-thumb" alt="Evidence photo 2">
+                                        </div>
+                                    </div>
+                                    
+                                    <h6 class="mb-3">Farmer's Evidence</h6>
+                                    <div class="row g-2">
+                                        <div class="col-3">
+                                            <img src="https://via.placeholder.com/300" class="evidence-thumb" alt="Evidence photo 3">
+                                        </div>
+                                        <div class="col-3">
+                                            <img src="https://via.placeholder.com/300" class="evidence-thumb" alt="Evidence photo 4">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Communication -->
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Communication</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chat-container mb-3">
+                                        <div class="customer-message message-bubble">
+                                            <p>The tomatoes I received are completely different from what was shown in the photos. Most are bruised and some are even moldy.</p>
+                                            <div class="message-time">John Smith - 2023-06-12 10:15 AM</div>
+                                        </div>
+                                        <div class="farmer-message message-bubble">
+                                            <p>We're sorry to hear about your experience. Our tomatoes are harvested at peak ripeness and carefully packed. Can you please share photos of the issue?</p>
+                                            <div class="message-time">Green Valley Organics - 2023-06-12 11:30 AM</div>
+                                        </div>
+                                        <div class="customer-message message-bubble">
+                                            <p>Here are the photos showing the condition of the tomatoes when I opened the package.</p>
+                                            <div class="message-time">John Smith - 2023-06-12 12:45 PM</div>
+                                        </div>
+                                        <div class="admin-message message-bubble">
+                                            <p>This case has been assigned to me for investigation. I'll review all evidence and communicate with both parties to reach a fair resolution.</p>
+                                            <div class="message-time">Admin (You) - 2023-06-12 03:20 PM</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Add Message</label>
+                                        <textarea class="form-control" rows="3" placeholder="Type your message to both parties..."></textarea>
+                                    </div>
+                                    <button class="btn btn-primary">Send Message</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <!-- Resolution Panel -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Resolution Panel</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Current Status</label>
+                                        <input type="text" class="form-control" value="Under Investigation" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Assigned To</label>
+                                        <input type="text" class="form-control" value="You (Admin)" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Days Open</label>
+                                        <input type="text" class="form-control" value="1 day" readonly>
+                                    </div>
+                                    <hr>
+                                    <h6 class="mb-3">Proposed Resolution</h6>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="resolution" id="refundPartial">
+                                        <label class="form-check-label" for="refundPartial">
+                                            Partial refund (50%) - $22.50
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="resolution" id="refundFull">
+                                        <label class="form-check-label" for="refundFull">
+                                            Full refund - $45.00
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="resolution" id="replacement">
+                                        <label class="form-check-label" for="replacement">
+                                            Replacement shipment
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="resolution" id="credit">
+                                        <label class="form-check-label" for="credit">
+                                            Store credit ($45.00 + $10 bonus)
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio" name="resolution" id="reject">
+                                        <label class="form-check-label" for="reject">
+                                            Reject claim - no action
+                                        </label>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Resolution Notes</label>
+                                        <textarea class="form-control" rows="3" placeholder="Explain your decision..."></textarea>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-success">Propose Resolution</button>
+                                        <button class="btn btn-outline-danger">Escalate Dispute</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Parties Information -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Parties Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="mb-3">Customer</h6>
+                                    <p class="mb-1"><strong>Name:</strong> John Smith</p>
+                                    <p class="mb-1"><strong>Email:</strong> john.smith@example.com</p>
+                                    <p class="mb-1"><strong>Phone:</strong> (555) 123-4567</p>
+                                    <p class="mb-3"><strong>Joined:</strong> Jan 2022</p>
+                                    
+                                    <hr>
+                                    
+                                    <h6 class="mb-3">Farmer</h6>
+                                    <p class="mb-1"><strong>Farm:</strong> Green Valley Organics</p>
+                                    <p class="mb-1"><strong>Contact:</strong> John Farmer</p>
+                                    <p class="mb-1"><strong>Email:</strong> john@greenvalley.com</p>
+                                    <p class="mb-1"><strong>Phone:</strong> (555) 987-6543</p>
+                                    <p class="mb-3"><strong>Joined:</strong> Mar 2021</p>
+                                    
+                                    <hr>
+                                    
+                                    <h6 class="mb-3">Order Details</h6>
+                                    <p class="mb-1"><strong>Order Date:</strong> 2023-06-10</p>
+                                    <p class="mb-1"><strong>Shipped:</strong> 2023-06-11</p>
+                                    <p class="mb-1"><strong>Delivered:</strong> 2023-06-12</p>
+                                    <p class="mb-1"><strong>Amount:</strong> $45.00</p>
+                                </div>
+                            </div>
+
+                            <!-- Dispute History -->
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Dispute History</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-warning">
+                                        <strong>Customer has 2 previous disputes</strong><br>
+                                        1 resolved in their favor, 1 rejected
+                                    </div>
+                                    <div class="alert alert-info">
+                                        <strong>Farmer has 1 previous dispute</strong><br>
+                                        Resolved with partial refund
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save Notes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Dispute Modal -->
+    <div class="modal fade" id="newDisputeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Dispute</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newDisputeForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Select Order</label>
+                                <select class="form-select" required>
+                                    <option value="">Select Order</option>
+                                    <option value="ORD-1001">ORD-1001 - John Smith</option>
+                                    <option value="ORD-1002">ORD-1002 - Sarah Johnson</option>
+                                    <option value="ORD-1003">ORD-1003 - Michael Brown</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Dispute Type</label>
+                                <select class="form-select" required>
+                                    <option value="">Select Type</option>
+                                    <option value="quality">Product Quality</option>
+                                    <option value="delivery">Delivery Issues</option>
+                                    <option value="description">Misleading Description</option>
+                                    <option value="payment">Payment Dispute</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" required>
+                                    <option value="high">High</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Assign To</label>
+                                <select class="form-select">
+                                    <option value="">Select Admin</option>
+                                    <option value="admin1">Admin 1</option>
+                                    <option value="admin2">Admin 2</option>
+                                    <option value="admin3">Admin 3</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="4" required placeholder="Describe the dispute in detail..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Upload Evidence</label>
+                            <input type="file" class="form-control" multiple accept="image/*,.pdf">
+                            <small class="text-muted">Upload photos, documents, or other evidence supporting the dispute</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Proposed Resolution</label>
+                            <textarea class="form-control" rows="3" placeholder="What resolution are you proposing? (optional)"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="newDisputeForm" class="btn btn-success">Create Dispute</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#disputesTable').DataTable({
+                responsive: true,
+                dom: '<"top"f>rt<"bottom"lip><"clear">',
+                pageLength: 10,
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search disputes...",
+                    lengthMenu: "Show _MENU_ entries per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    infoEmpty: "No entries found",
+                    infoFiltered: "(filtered from _MAX_ total entries)"
+                }
+            });
+
+            // Dispute action buttons
+            $('.assign-btn').click(function(e) {
+                e.stopPropagation();
+                const row = $(this).closest('tr');
+                const disputeId = row.find('td:first').text();
+                assignDispute(disputeId, row);
+            });
+
+            $('.resolve-btn').click(function(e) {
+                e.stopPropagation();
+                const row = $(this).closest('tr');
+                const disputeId = row.find('td:first').text();
+                resolveDispute(disputeId, row);
+            });
+
+            // Export button
+            $('#exportBtn').click(function() {
+                exportDisputes();
+            });
+        });
+
+        // Assign dispute function
+        async function assignDispute(disputeId, row) {
+            try {
+                // In a real app, call your smart contract
+                // const contract = new web3.eth.Contract(abi, contractAddress);
+                // await contract.methods.assignDispute(disputeId).send({ from: adminAddress });
+                
+                // For demo purposes, we'll just update the UI
+                row.find('.status-badge')
+                    .removeClass('status-open')
+                    .addClass('status-investigation')
+                    .text('Investigation');
+                
+                row.find('.assign-btn').remove();
+                row.find('.resolve-btn').removeClass('d-none');
+                
+                showToast('Dispute assigned for investigation!', 'success');
+            } catch (error) {
+                console.error('Assignment failed:', error);
+                showToast('Assignment failed: ' + error.message, 'error');
+            }
+        }
+
+        // Resolve dispute function
+        async function resolveDispute(disputeId, row) {
+            try {
+                // In a real app, call your smart contract
+                // const contract = new web3.eth.Contract(abi, contractAddress);
+                // await contract.methods.resolveDispute(disputeId).send({ from: adminAddress });
+                
+                // For demo purposes, we'll just update the UI
+                row.find('.status-badge')
+                    .removeClass('status-investigation')
+                    .addClass('status-resolved')
+                    .text('Resolved');
+                
+                row.find('.resolve-btn').remove();
+                
+                showToast('Dispute resolved successfully!', 'success');
+            } catch (error) {
+                console.error('Resolution failed:', error);
+                showToast('Resolution failed: ' + error.message, 'error');
+            }
+        }
+
+        // Export disputes
+        function exportDisputes() {
+            // In a real app, this would generate a CSV/Excel file
+            showToast('Export started. Your download will begin shortly.', 'info');
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = $(`
+                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `);
+            
+            $('#toastContainer').remove();
+            $('body').append('<div id="toastContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 1100;"></div>');
+            $('#toastContainer').append(toast);
+            
+            const bsToast = new bootstrap.Toast(toast[0]);
+            bsToast.show();
+            
+            toast.on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }
+    </script>
+</body>
+</html>

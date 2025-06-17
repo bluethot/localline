@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmChain - Order Management</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+        }
+        .sidebar {
+            height: 100vh;
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--primary-green) 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 8px;
+        }
+        .stat-card {
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .order-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-green);
+        }
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .badge-pending {
+            background-color: #FFC107;
+            color: #000;
+        }
+        .badge-shipped {
+            background-color: #17A2B8;
+            color: #FFF;
+        }
+        .badge-delivered {
+            background-color: #28A745;
+            color: #FFF;
+        }
+        .badge-cancelled {
+            background-color: #DC3545;
+            color: #FFF;
+        }
+        .order-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .order-timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #E9ECEF;
+        }
+        .timeline-step {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6C757D;
+            border: 2px solid #FFF;
+        }
+        .timeline-step.completed::before {
+            background: var(--primary-green);
+        }
+        .timeline-step.active::before {
+            background: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+        }
+        .order-product-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .status-select {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .status-select:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar text-white p-0">
+                <div class="p-3">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-leaf me-2"></i>FarmChain
+                    </h4>
+                    <hr class="bg-light">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="product.html">
+                                <i class="fas fa-apple-alt"></i> Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="order.html">
+                                <i class="fas fa-shopping-bag"></i> Orders
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="inventory.html">
+                                <i class="fas fa-boxes"></i> Inventory
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="analytics.html">
+                                <i class="fas fa-chart-line"></i> Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="farm-profile.html">
+                                <i class="fas fa-tractor"></i> Farm Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="payments.html">
+                                <i class="fas fa-wallet"></i> Payments
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Top Bar -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Order Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="connectWalletBtn">
+                                <i class="fas fa-wallet me-1"></i>
+                                <span id="walletStatus">Connect Wallet</span>
+                            </button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i> Sunny Acres Farm
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Sign out</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Orders</h6>
+                                        <h3 class="mb-0" id="totalOrders">42</h3>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-shopping-bag text-primary"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 12% from last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Pending Fulfillment</h6>
+                                        <h3 class="mb-0" id="pendingOrders">8</h3>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-clock text-warning"></i>
+                                    </div>
+                                </div>
+                                <p class="text-danger small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 3 need shipping today
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">This Month's Revenue</h6>
+                                        <h3 class="mb-0" id="monthRevenue">$2,845</h3>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-dollar-sign text-success"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 15% from last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Avg. Order Value</h6>
+                                        <h3 class="mb-0" id="avgOrderValue">$67.74</h3>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-chart-bar text-info"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 8% from last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Management Content -->
+                <div class="row">
+                    <!-- Orders List -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Recent Orders</h5>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                                        <i class="fas fa-filter me-1"></i> Filter
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="filterOrders('all')">All Orders</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" onclick="filterOrders('pending')">Pending</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="filterOrders('shipped')">Shipped</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="filterOrders('delivered')">Delivered</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="filterOrders('cancelled')">Cancelled</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Order ID</th>
+                                                <th>Customer</th>
+                                                <th>Date</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="ordersTable">
+                                            <!-- Orders will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <nav aria-label="Orders pagination">
+                                    <ul class="pagination justify-content-center mt-3">
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                        </li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#">Next</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Details and Timeline -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Order Details</h5>
+                            </div>
+                            <div class="card-body" id="orderDetailsContainer">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                                    <h5>Select an order to view details</h5>
+                                    <p class="text-muted">Click on any order from the list to see full details</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Analytics -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Order Analytics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <canvas id="ordersChart" height="250"></canvas>
+                            </div>
+                            <div class="col-md-4">
+                                <canvas id="orderStatusChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Order Fulfillment Modal -->
+    <div class="modal fade" id="fulfillOrderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Order Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="fulfillmentForm">
+                        <input type="hidden" id="currentOrderId">
+                        <div class="mb-3">
+                            <label class="form-label">Order Status</label>
+                            <select class="form-select" id="orderStatusSelect">
+                                <option value="pending">Pending</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="shippingDetailsSection">
+                            <label class="form-label">Shipping Details</label>
+                            <input type="text" class="form-control mb-2" placeholder="Tracking Number">
+                            <input type="text" class="form-control mb-2" placeholder="Carrier">
+                            <textarea class="form-control" rows="3" placeholder="Shipping notes (optional)"></textarea>
+                        </div>
+                        <div class="mb-3" id="cancellationReasonSection" style="display: none;">
+                            <label class="form-label">Cancellation Reason</label>
+                            <textarea class="form-control" rows="3" placeholder="Reason for cancellation"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="saveOrderStatusBtn">Update Status</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Current selected order
+        let currentOrder = null;
+        let orders = [];
+
+        // Initialize order page when DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrderData();
+            setupOrderCharts();
+            setupEventListeners();
+        });
+
+        // Sample order data
+        const sampleOrders = [
+            {
+                id: "FC-1001",
+                customer: "Sarah Johnson",
+                email: "sarah.johnson@example.com",
+                date: "2023-06-10",
+                amount: 42.97,
+                status: "shipped",
+                paymentMethod: "Credit Card",
+                paymentStatus: "paid",
+                shippingAddress: "123 Main St, Apt 4B, Springfield, IL 62704",
+                products: [
+                    {
+                        id: 1,
+                        name: "Organic Strawberries",
+                        price: 4.99,
+                        quantity: 2,
+                        unit: "lb",
+                        image: "strawberries.jpg"
+                    },
+                    {
+                        id: 2,
+                        name: "Free-Range Eggs",
+                        price: 5.50,
+                        quantity: 1,
+                        unit: "dozen",
+                        image: "eggs.jpg"
+                    }
+                ],
+                trackingNumber: "FC123456789",
+                carrier: "FarmChain Logistics",
+                timeline: [
+                    { date: "2023-06-10 09:30", status: "ordered", description: "Order placed" },
+                    { date: "2023-06-10 11:45", status: "processed", description: "Order processed" },
+                    { date: "2023-06-11 14:20", status: "shipped", description: "Shipped with tracking #FC123456789" }
+                ]
+            },
+            {
+                id: "FC-1002",
+                customer: "Michael Chen",
+                email: "michael.chen@example.com",
+                date: "2023-06-09",
+                amount: 67.45,
+                status: "pending",
+                paymentMethod: "Crypto (ETH)",
+                paymentStatus: "confirmed",
+                shippingAddress: "456 Oak Ave, Unit 12, Portland, OR 97201",
+                products: [
+                    {
+                        id: 3,
+                        name: "Heirloom Tomatoes",
+                        price: 3.75,
+                        quantity: 3,
+                        unit: "lb",
+                        image: "tomatoes.jpg"
+                    },
+                    {
+                        id: 4,
+                        name: "Raw Honey",
+                        price: 12.99,
+                        quantity: 2,
+                        unit: "jar",
+                        image: "honey.jpg"
+                    },
+                    {
+                        id: 5,
+                        name: "Artisan Bread",
+                        price: 7.50,
+                        quantity: 1,
+                        unit: "loaf",
+                        image: "bread.jpg"
+                    }
+                ],
+                timeline: [
+                    { date: "2023-06-09 16:15", status: "ordered", description: "Order placed" },
+                    { date: "2023-06-09 17:30", status: "processed", description: "Order processed" }
+                ]
+            },
+            {
+                id: "FC-1003",
+                customer: "Emma Rodriguez",
+                email: "emma.rodriguez@example.com",
+                date: "2023-06-08",
+                amount: 28.25,
+                status: "delivered",
+                paymentMethod: "Credit Card",
+                paymentStatus: "paid",
+                shippingAddress: "789 Pine Rd, Austin, TX 78701",
+                products: [
+                    {
+                        id: 2,
+                        name: "Free-Range Eggs",
+                        price: 5.50,
+                        quantity: 2,
+                        unit: "dozen",
+                        image: "eggs.jpg"
+                    },
+                    {
+                        id: 6,
+                        name: "Mixed Greens",
+                        price: 4.25,
+                        quantity: 3,
+                        unit: "bunch",
+                        image: "greens.jpg"
+                    }
+                ],
+                trackingNumber: "FC987654321",
+                carrier: "FarmChain Logistics",
+                timeline: [
+                    { date: "2023-06-08 10:45", status: "ordered", description: "Order placed" },
+                    { date: "2023-06-08 12:30", status: "processed", description: "Order processed" },
+                    { date: "2023-06-09 09:15", status: "shipped", description: "Shipped with tracking #FC987654321" },
+                    { date: "2023-06-11 14:00", status: "delivered", description: "Delivered to customer" }
+                ]
+            },
+            {
+                id: "FC-1004",
+                customer: "David Wilson",
+                email: "david.wilson@example.com",
+                date: "2023-06-07",
+                amount: 15.48,
+                status: "cancelled",
+                paymentMethod: "Credit Card",
+                paymentStatus: "refunded",
+                shippingAddress: "321 Elm St, Denver, CO 80202",
+                products: [
+                    {
+                        id: 1,
+                        name: "Organic Strawberries",
+                        price: 4.99,
+                        quantity: 1,
+                        unit: "lb",
+                        image: "strawberries.jpg"
+                    },
+                    {
+                        id: 7,
+                        name: "Fresh Milk",
+                        price: 6.50,
+                        quantity: 1,
+                        unit: "gallon",
+                        image: "milk.jpg"
+                    }
+                ],
+                cancellationReason: "Customer requested cancellation before shipping",
+                timeline: [
+                    { date: "2023-06-07 14:20", status: "ordered", description: "Order placed" },
+                    { date: "2023-06-07 15:45", status: "processed", description: "Order processed" },
+                    { date: "2023-06-07 16:30", status: "cancelled", description: "Order cancelled by customer" }
+                ]
+            }
+        ];
+
+        // Load order data
+        function loadOrderData() {
+            orders = [...sampleOrders];
+            renderOrdersTable(orders);
+            updateOrderStats(orders);
+        }
+
+        // Render orders table
+        function renderOrdersTable(ordersToRender) {
+            const ordersTable = document.getElementById('ordersTable');
+            ordersTable.innerHTML = '';
+
+            if (ordersToRender.length === 0) {
+                ordersTable.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="fas fa-shopping-bag fa-2x text-muted mb-3"></i>
+                            <h5>No orders found</h5>
+                            <p class="text-muted">Try adjusting your filters</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            ordersToRender.forEach(order => {
+                const statusBadge = {
+                    'pending': 'badge-pending',
+                    'shipped': 'badge-shipped',
+                    'delivered': 'badge-delivered',
+                    'cancelled': 'badge-cancelled'
+                }[order.status] || 'badge-secondary';
+
+                const row = document.createElement('tr');
+                row.className = 'order-row';
+                row.setAttribute('data-order-id', order.id);
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.customer}</td>
+                    <td>${new Date(order.date).toLocaleDateString()}</td>
+                    <td>$${order.amount.toFixed(2)}</td>
+                    <td><span class="badge ${statusBadge}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('${order.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                ordersTable.appendChild(row);
+            });
+
+            // Add click event to all order rows
+            document.querySelectorAll('.order-row').forEach(row => {
+                row.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    viewOrderDetails(orderId);
+                });
+            });
+        }
+
+        // View order details
+        function viewOrderDetails(orderId) {
+            currentOrder = orders.find(o => o.id === orderId);
+            if (!currentOrder) return;
+
+            const orderDetailsContainer = document.getElementById('orderDetailsContainer');
+            
+            // Status badge
+            const statusBadge = {
+                'pending': 'badge-pending',
+                'shipped': 'badge-shipped',
+                'delivered': 'badge-delivered',
+                'cancelled': 'badge-cancelled'
+            }[currentOrder.status] || 'badge-secondary';
+
+            // Payment status badge
+            const paymentBadge = currentOrder.paymentStatus === 'paid' ? 'badge-success' : 
+                                currentOrder.paymentStatus === 'refunded' ? 'badge-info' : 'badge-warning';
+
+            // Timeline steps
+            let timelineSteps = '';
+            const statusSequence = ['ordered', 'processed', 'shipped', 'delivered'];
+            
+            statusSequence.forEach((status, index) => {
+                const timelineEvent = currentOrder.timeline.find(e => e.status === status);
+                const isCompleted = currentOrder.timeline.some(e => e.status === status);
+                const isActive = index === statusSequence.indexOf(currentOrder.status) && isCompleted;
+                
+                if (timelineEvent) {
+                    timelineSteps += `
+                        <div class="timeline-step ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}">
+                            <div class="d-flex justify-content-between">
+                                <strong>${status.charAt(0).toUpperCase() + status.slice(1)}</strong>
+                                <small class="text-muted">${formatDateTime(timelineEvent.date)}</small>
+                            </div>
+                            <p class="small mb-0">${timelineEvent.description}</p>
+                        </div>
+                    `;
+                } else if (status === 'cancelled' && currentOrder.status === 'cancelled') {
+                    const cancelEvent = currentOrder.timeline.find(e => e.status === 'cancelled');
+                    if (cancelEvent) {
+                        timelineSteps += `
+                            <div class="timeline-step completed active">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Cancelled</strong>
+                                    <small class="text-muted">${formatDateTime(cancelEvent.date)}</small>
+                                </div>
+                                <p class="small mb-0">${cancelEvent.description}</p>
+                                ${currentOrder.cancellationReason ? `<p class="small text-danger mt-1">Reason: ${currentOrder.cancellationReason}</p>` : ''}
+                            </div>
+                        `;
+                    }
+                }
+            });
+
+            // Products list
+            let productsList = '';
+            currentOrder.products.forEach(product => {
+                productsList += `
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="assets/${product.image}" class="order-product-img me-3" alt="${product.name}">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${product.name}</h6>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">${product.quantity} × $${product.price.toFixed(2)}/${product.unit}</small>
+                                <small class="fw-bold">$${(product.quantity * product.price).toFixed(2)}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Shipping info if available
+            const shippingInfo = currentOrder.status === 'shipped' || currentOrder.status === 'delivered' ? `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">Shipping Information</h6>
+                        <p class="mb-1"><strong>Carrier:</strong> ${currentOrder.carrier}</p>
+                        <p class="mb-1"><strong>Tracking #:</strong> ${currentOrder.trackingNumber}</p>
+                        <a href="#" class="btn btn-sm btn-outline-primary mt-2">Track Package</a>
+                    </div>
+                </div>
+            ` : '';
+
+            // Build order details HTML
+            orderDetailsContainer.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Order #${currentOrder.id}</h5>
+                    <span class="badge ${statusBadge}">${currentOrder.status.charAt(0).toUpperCase() + currentOrder.status.slice(1)}</span>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div>
+                                <h6 class="card-title mb-1">Customer</h6>
+                                <p class="mb-1">${currentOrder.customer}</p>
+                                <p class="mb-1 small text-muted">${currentOrder.email}</p>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="card-title mb-1">Order Date</h6>
+                                <p>${new Date(currentOrder.date).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                        
+                        <h6 class="card-title mb-2">Shipping Address</h6>
+                        <p class="mb-0">${currentOrder.shippingAddress}</p>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">Order Summary</h6>
+                        ${productsList}
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Subtotal</strong>
+                            <span>$${currentOrder.amount.toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <strong>Shipping</strong>
+                            <span>Free</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total</strong>
+                            <span>$${currentOrder.amount.toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mt-1">
+                            <span class="text-muted">Payment Method</span>
+                            <span class="text-muted">${currentOrder.paymentMethod} <span class="badge ${paymentBadge} ms-1">${currentOrder.paymentStatus.charAt(0).toUpperCase() + currentOrder.paymentStatus.slice(1)}</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                ${shippingInfo}
+                
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">Order Timeline</h6>
+                        <div class="order-timeline">
+                            ${timelineSteps}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-success" onclick="showFulfillmentModal('${currentOrder.id}')">
+                        <i class="fas fa-truck me-1"></i> Update Order Status
+                    </button>
+                    <button class="btn btn-outline-secondary">
+                        <i class="fas fa-print me-1"></i> Print Invoice
+                    </button>
+                </div>
+            `;
+        }
+
+        // Show fulfillment modal
+        function showFulfillmentModal(orderId) {
+            currentOrder = orders.find(o => o.id === orderId);
+            if (!currentOrder) return;
+
+            document.getElementById('currentOrderId').value = orderId;
+            document.getElementById('orderStatusSelect').value = currentOrder.status;
+            
+            // Show/hide sections based on current status
+            toggleFulfillmentSections(currentOrder.status);
+            
+            // Add change event to status select
+            document.getElementById('orderStatusSelect').addEventListener('change', function() {
+                toggleFulfillmentSections(this.value);
+            });
+            
+            const modal = new bootstrap.Modal(document.getElementById('fulfillOrderModal'));
+            modal.show();
+        }
+
+        // Toggle fulfillment modal sections
+        function toggleFulfillmentSections(status) {
+            const shippingSection = document.getElementById('shippingDetailsSection');
+            const cancelSection = document.getElementById('cancellationReasonSection');
+            
+            if (status === 'shipped') {
+                shippingSection.style.display = 'block';
+                cancelSection.style.display = 'none';
+            } else if (status === 'cancelled') {
+                shippingSection.style.display = 'none';
+                cancelSection.style.display = 'block';
+            } else {
+                shippingSection.style.display = 'none';
+                cancelSection.style.display = 'none';
+            }
+        }
+
+        // Filter orders
+        function filterOrders(filterType) {
+            let filteredOrders = [...sampleOrders];
+            
+            if (filterType !== 'all') {
+                filteredOrders = filteredOrders.filter(order => order.status === filterType);
+            }
+            
+            renderOrdersTable(filteredOrders);
+            updateOrderStats(filteredOrders);
+        }
+
+        // Update order status
+        function updateOrderStatus(orderId, newStatus, trackingInfo, cancelReason) {
+            const orderIndex = orders.findIndex(o => o.id === orderId);
+            if (orderIndex === -1) return;
+            
+            const order = orders[orderIndex];
+            const now = new Date().toISOString().replace('T', ' ').substring(0, 16);
+            
+            // Update order status
+            order.status = newStatus;
+            
+            // Add to timeline
+            if (newStatus === 'shipped') {
+                order.trackingNumber = trackingInfo.trackingNumber;
+                order.carrier = trackingInfo.carrier;
+                order.timeline.push({
+                    date: now,
+                    status: 'shipped',
+                    description: `Shipped with tracking #${trackingInfo.trackingNumber} via ${trackingInfo.carrier}`
+                });
+            } else if (newStatus === 'delivered') {
+                order.timeline.push({
+                    date: now,
+                    status: 'delivered',
+                    description: 'Delivered to customer'
+                });
+            } else if (newStatus === 'cancelled') {
+                order.cancellationReason = cancelReason;
+                order.timeline.push({
+                    date: now,
+                    status: 'cancelled',
+                    description: 'Order cancelled' + (cancelReason ? `: ${cancelReason}` : '')
+                });
+            }
+            
+            // Update UI
+            renderOrdersTable(orders);
+            if (currentOrder && currentOrder.id === orderId) {
+                viewOrderDetails(orderId);
+            }
+            updateOrderStats(orders);
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('fulfillOrderModal')).hide();
+            
+            alert(`Order ${orderId} status updated to ${newStatus}`);
+        }
+
+        // Update order statistics
+        function updateOrderStats(orders) {
+            document.getElementById('totalOrders').textContent = orders.length;
+            document.getElementById('pendingOrders').textContent = orders.filter(o => o.status === 'pending').length;
+            
+            const thisMonthRevenue = orders
+                .filter(o => new Date(o.date).getMonth() === new Date().getMonth())
+                .reduce((sum, order) => sum + order.amount, 0);
+            document.getElementById('monthRevenue').textContent = `$${thisMonthRevenue.toFixed(2)}`;
+            
+            const avgOrderValue = orders.length > 0 ? 
+                orders.reduce((sum, order) => sum + order.amount, 0) / orders.length : 0;
+            document.getElementById('avgOrderValue').textContent = `$${avgOrderValue.toFixed(2)}`;
+        }
+
+        // Format date time for display
+        function formatDateTime(dateTimeStr) {
+            const date = new Date(dateTimeStr);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        // Setup order charts
+        function setupOrderCharts() {
+            // Orders Chart
+            const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+            new Chart(ordersCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Monthly Orders',
+                        data: [12, 19, 15, 20, 25, 28],
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Order Status Chart
+            const statusCtx = document.getElementById('orderStatusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Delivered', 'Shipped', 'Pending', 'Cancelled'],
+                    datasets: [{
+                        data: [22, 8, 8, 4],
+                        backgroundColor: [
+                            '#28A745',
+                            '#17A2B8',
+                            '#FFC107',
+                            '#DC3545'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Connect wallet
+            document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
+            
+            // Save order status button
+            document.getElementById('saveOrderStatusBtn').addEventListener('click', function() {
+                const orderId = document.getElementById('currentOrderId').value;
+                const newStatus = document.getElementById('orderStatusSelect').value;
+                
+                let trackingInfo = {};
+                if (newStatus === 'shipped') {
+                    trackingInfo = {
+                        trackingNumber: document.querySelector('#shippingDetailsSection input').value,
+                        carrier: document.querySelectorAll('#shippingDetailsSection input')[1].value
+                    };
+                }
+                
+                const cancelReason = newStatus === 'cancelled' ? 
+                    document.querySelector('#cancellationReasonSection textarea').value : '';
+                
+                updateOrderStatus(orderId, newStatus, trackingInfo, cancelReason);
+            });
+        }
+
+        // Connect wallet function
+        async function connectWallet() {
+            try {
+                if (window.ethereum) {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const walletBtn = document.getElementById('connectWalletBtn');
+                    const walletStatus = document.getElementById('walletStatus');
+                    
+                    walletBtn.classList.remove('btn-outline-secondary');
+                    walletBtn.classList.add('btn-success');
+                    walletStatus.innerHTML = `${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}`;
+                    
+                    // Load farmer data from blockchain
+                    loadFarmerData(accounts[0]);
+                } else {
+                    alert('Please install MetaMask!');
+                }
+            } catch (error) {
+                console.error('Wallet connection failed:', error);
+            }
+        }
+
+        // Load farmer data from blockchain
+        async function loadFarmerData(walletAddress) {
+            // In a real app, you would query your smart contract
+            console.log(`Loading data for farmer: ${walletAddress}`);
+        }
+    </script>
+</body>
+</html>

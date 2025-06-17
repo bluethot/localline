@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmChain - Analytics Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Date Range Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css">
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+        }
+        .sidebar {
+            height: 100vh;
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--primary-green) 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 8px;
+        }
+        .stat-card {
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .analytics-card {
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .analytics-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .date-range-picker {
+            background: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+        }
+        .date-range-picker i {
+            margin-right: 8px;
+            color: var(--primary-green);
+        }
+        .progress-thin {
+            height: 6px;
+        }
+        .top-product-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .map-container {
+            height: 100%;
+            min-height: 300px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .map-placeholder {
+            text-align: center;
+            padding: 20px;
+        }
+        .map-placeholder i {
+            font-size: 2rem;
+            color: var(--primary-green);
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar text-white p-0">
+                <div class="p-3">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-leaf me-2"></i>FarmChain
+                    </h4>
+                    <hr class="bg-light">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="product.html">
+                                <i class="fas fa-apple-alt"></i> Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="order.html">
+                                <i class="fas fa-shopping-bag"></i> Orders
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="inventory.html">
+                                <i class="fas fa-boxes"></i> Inventory
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="analytics.html">
+                                <i class="fas fa-chart-line"></i> Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="farm-profile.html">
+                                <i class="fas fa-tractor"></i> Farm Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="payments.html">
+                                <i class="fas fa-wallet"></i> Payments
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Top Bar -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Analytics Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div id="reportrange" class="date-range-picker me-3">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Last 30 Days</span>
+                            <i class="fas fa-caret-down ms-2"></i>
+                        </div>
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="connectWalletBtn">
+                                <i class="fas fa-wallet me-1"></i>
+                                <span id="walletStatus">Connect Wallet</span>
+                            </button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i> Sunny Acres Farm
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Sign out</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Revenue</h6>
+                                        <h3 class="mb-0" id="totalRevenue">$8,427</h3>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-dollar-sign text-success"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 18% from last period
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Orders</h6>
+                                        <h3 class="mb-0" id="totalOrders">124</h3>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-shopping-bag text-primary"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 12% from last period
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Avg. Order Value</h6>
+                                        <h3 class="mb-0" id="avgOrderValue">$67.96</h3>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-chart-bar text-info"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 5% from last period
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Customer Satisfaction</h6>
+                                        <h3 class="mb-0" id="customerSatisfaction">4.8</h3>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-star text-warning"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 92% positive reviews
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Analytics Charts -->
+                <div class="row mb-4">
+                    <!-- Revenue Chart -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="card analytics-card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Revenue Overview</h5>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary active">Daily</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">Weekly</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">Monthly</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="revenueChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Breakdown -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card analytics-card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Sales by Category</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="salesCategoryChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secondary Analytics Row -->
+                <div class="row mb-4">
+                    <!-- Top Products -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card analytics-card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Top Selling Products</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <div class="list-group-item border-0">
+                                        <div class="d-flex align-items-center">
+                                            <img src="assets/strawberries.jpg" class="top-product-img me-3" alt="Organic Strawberries">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">Organic Strawberries</h6>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="progress progress-thin flex-grow-1 me-3">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 78%"></div>
+                                                    </div>
+                                                    <strong>$2,145</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item border-0">
+                                        <div class="d-flex align-items-center">
+                                            <img src="assets/eggs.jpg" class="top-product-img me-3" alt="Free-Range Eggs">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">Free-Range Eggs</h6>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="progress progress-thin flex-grow-1 me-3">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 65%"></div>
+                                                    </div>
+                                                    <strong>$1,786</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item border-0">
+                                        <div class="d-flex align-items-center">
+                                            <img src="assets/tomatoes.jpg" class="top-product-img me-3" alt="Heirloom Tomatoes">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">Heirloom Tomatoes</h6>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="progress progress-thin flex-grow-1 me-3">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 52%"></div>
+                                                    </div>
+                                                    <strong>$1,423</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item border-0">
+                                        <div class="d-flex align-items-center">
+                                            <img src="assets/honey.jpg" class="top-product-img me-3" alt="Raw Honey">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">Raw Honey</h6>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="progress progress-thin flex-grow-1 me-3">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 45%"></div>
+                                                    </div>
+                                                    <strong>$1,234</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item border-0">
+                                        <div class="d-flex align-items-center">
+                                            <img src="assets/bread.jpg" class="top-product-img me-3" alt="Artisan Bread">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">Artisan Bread</h6>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="progress progress-thin flex-grow-1 me-3">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 38%"></div>
+                                                    </div>
+                                                    <strong>$1,042</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Map -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card analytics-card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Customer Locations</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="map-container">
+                                    <div class="map-placeholder">
+                                        <i class="fas fa-map-marked-alt"></i>
+                                        <h6>Customer Distribution Map</h6>
+                                        <p class="small text-muted">Interactive map showing customer locations</p>
+                                        <button class="btn btn-sm btn-success">Enable Location Data</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Channel -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card analytics-card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Sales Channels</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="salesChannelChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Analytics -->
+                <div class="row">
+                    <!-- Customer Growth -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card analytics-card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Customer Growth</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="customerGrowthChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Repeat Customers -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card analytics-card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Customer Loyalty</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="text-center mb-4">
+                                            <h2 class="text-success">42%</h2>
+                                            <p class="mb-0">Repeat Customers</p>
+                                            <small class="text-muted">Up from 38% last period</small>
+                                        </div>
+                                        <div class="text-center">
+                                            <h2 class="text-primary">3.2x</h2>
+                                            <p class="mb-0">More valuable</p>
+                                            <small class="text-muted">Than new customers</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <canvas id="repeatCustomerChart" height="200"></canvas>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="text-center">
+                                    <h6>Top Customers</h6>
+                                    <div class="d-flex justify-content-around">
+                                        <div>
+                                            <div class="avatar bg-primary text-white rounded-circle mb-2" style="width: 40px; height: 40px; line-height: 40px; text-align: center;">JS</div>
+                                            <small>John Smith</small>
+                                            <div class="text-success">$1,245</div>
+                                        </div>
+                                        <div>
+                                            <div class="avatar bg-info text-white rounded-circle mb-2" style="width: 40px; height: 40px; line-height: 40px; text-align: center;">MJ</div>
+                                            <small>Mary Johnson</small>
+                                            <div class="text-success">$1,120</div>
+                                        </div>
+                                        <div>
+                                            <div class="avatar bg-warning text-white rounded-circle mb-2" style="width: 40px; height: 40px; line-height: 40px; text-align: center;">DC</div>
+                                            <small>David Chen</small>
+                                            <div class="text-success">$987</div>
+                                        </div>
+                                        <div>
+                                            <div class="avatar bg-danger text-white rounded-circle mb-2" style="width: 40px; height: 40px; line-height: 40px; text-align: center;">ER</div>
+                                            <small>Emma Rodriguez</small>
+                                            <div class="text-success">$856</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Export Analytics Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="exportForm">
+                        <div class="mb-3">
+                            <label class="form-label">Date Range</label>
+                            <select class="form-select">
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                                <option>Last 90 days</option>
+                                <option>This year</option>
+                                <option>Custom range</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Data Type</label>
+                            <select class="form-select">
+                                <option>Sales Data</option>
+                                <option>Customer Data</option>
+                                <option>Product Performance</option>
+                                <option>All Data</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">File Format</label>
+                            <select class="form-select">
+                                <option>CSV</option>
+                                <option>Excel</option>
+                                <option>PDF Report</option>
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-file-export me-2"></i> Export Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Date Range Picker -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Initialize analytics page when DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setupDateRangePicker();
+            setupAnalyticsCharts();
+            setupEventListeners();
+        });
+
+        // Setup date range picker
+        function setupDateRangePicker() {
+            $('#reportrange').daterangepicker({
+                opens: 'left',
+                startDate: moment().subtract(29, 'days'),
+                endDate: moment(),
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            }, function(start, end, label) {
+                $('#reportrange span').html(start.format('MMM D, YYYY') + ' - ' + end.format('MMM D, YYYY'));
+                // In a real app, you would reload data for the selected range
+                console.log("New date range selected: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+            });
+        }
+
+        // Setup analytics charts
+        function setupAnalyticsCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [1200, 1900, 1500, 2000, 2500, 2845, 3200],
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Sales by Category Chart
+            const categoryCtx = document.getElementById('salesCategoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fruits', 'Vegetables', 'Dairy', 'Meat', 'Grains', 'Other'],
+                    datasets: [{
+                        data: [25, 20, 15, 10, 15, 15],
+                        backgroundColor: [
+                            '#4CAF50',
+                            '#8BC34A',
+                            '#FFC107',
+                            '#FF9800',
+                            '#795548',
+                            '#9E9E9E'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+
+            // Sales Channel Chart
+            const channelCtx = document.getElementById('salesChannelChart').getContext('2d');
+            new Chart(channelCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['FarmChain Marketplace', 'Farmers Market', 'CSA Subscriptions', 'Local Stores', 'Restaurants'],
+                    datasets: [{
+                        label: 'Sales',
+                        data: [45, 25, 15, 10, 5],
+                        backgroundColor: '#4CAF50'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    indexAxis: 'y'
+                }
+            });
+
+            // Customer Growth Chart
+            const growthCtx = document.getElementById('customerGrowthChart').getContext('2d');
+            new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [
+                        {
+                            label: 'New Customers',
+                            data: [15, 22, 18, 25, 30, 28, 35],
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Repeat Customers',
+                            data: [25, 30, 35, 40, 45, 50, 55],
+                            borderColor: '#2196F3',
+                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Repeat Customer Chart
+            const repeatCtx = document.getElementById('repeatCustomerChart').getContext('2d');
+            new Chart(repeatCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Repeat Customers', 'New Customers'],
+                    datasets: [{
+                        data: [42, 58],
+                        backgroundColor: [
+                            '#4CAF50',
+                            '#2196F3'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Connect wallet
+            document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
+
+            // Export form submission
+            document.getElementById('exportForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Exporting analytics data...');
+                $('#exportModal').modal('hide');
+            });
+
+            // Time period buttons
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelector('.btn-group .btn.active').classList.remove('active');
+                    this.classList.add('active');
+                    // In a real app, you would update charts based on selected time period
+                });
+            });
+        }
+
+        // Connect wallet function
+        async function connectWallet() {
+            try {
+                if (window.ethereum) {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const walletBtn = document.getElementById('connectWalletBtn');
+                    const walletStatus = document.getElementById('walletStatus');
+                    
+                    walletBtn.classList.remove('btn-outline-secondary');
+                    walletBtn.classList.add('btn-success');
+                    walletStatus.innerHTML = `${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}`;
+                    
+                    // Load farmer data from blockchain
+                    loadFarmerData(accounts[0]);
+                } else {
+                    alert('Please install MetaMask!');
+                }
+            } catch (error) {
+                console.error('Wallet connection failed:', error);
+            }
+        }
+
+        // Load farmer data from blockchain
+        async function loadFarmerData(walletAddress) {
+            // In a real app, you would query your smart contract
+            console.log(`Loading data for farmer: ${walletAddress}`);
+        }
+    </script>
+</body>
+</html>

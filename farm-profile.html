@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmChain - Farm Profile</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+        }
+        .sidebar {
+            height: 100vh;
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--primary-green) 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 8px;
+        }
+        .stat-card {
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .farm-map {
+            height: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+        }
+        .certification-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            background-color: #e8f5e9;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--dark-green);
+        }
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 5px solid white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        .edit-icon {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        .farm-gallery-img {
+            height: 100px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .farm-gallery-img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .nav-pills .nav-link.active {
+            background-color: var(--primary-green);
+        }
+        .nav-pills .nav-link {
+            color: #495057;
+        }
+        #farmTabsContent {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar text-white p-0">
+                <div class="p-3">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-leaf me-2"></i>FarmChain
+                    </h4>
+                    <hr class="bg-light">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="product.html">
+                                <i class="fas fa-apple-alt"></i> Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="order.html">
+                                <i class="fas fa-shopping-bag"></i> Orders
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="inventory.html">
+                                <i class="fas fa-boxes"></i> Inventory
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="analytics.html">
+                                <i class="fas fa-chart-line"></i> Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="farm-profile.html">
+                                <i class="fas fa-tractor"></i> Farm Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="payments.html">
+                                <i class="fas fa-wallet"></i> Payments
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Top Bar -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Farm Profile</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="connectWalletBtn">
+                                <i class="fas fa-wallet me-1"></i>
+                                <span id="walletStatus">Connect Wallet</span>
+                            </button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i> Sunny Acres Farm
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Sign out</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Farm Profile Header -->
+                <div class="row mb-4">
+                    <div class="col-lg-4">
+                        <div class="card mb-4">
+                            <div class="card-body text-center position-relative">
+                                <img src="assets/farm-logo.jpg" alt="Farm Logo" class="profile-img mb-3">
+                                <div class="edit-icon" data-bs-toggle="modal" data-bs-target="#changeLogoModal">
+                                    <i class="fas fa-pencil-alt text-muted"></i>
+                                </div>
+                                <h4>Sunny Acres Farm</h4>
+                                <p class="text-muted mb-1">Family-owned since 1985</p>
+                                <div class="d-flex justify-content-center mb-3">
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star-half-alt text-warning"></i>
+                                    <span class="ms-2">4.7 (128 reviews)</span>
+                                </div>
+                                <div class="d-flex justify-content-center">
+                                    <button class="btn btn-success me-2">
+                                        <i class="fas fa-share-alt me-1"></i> Share
+                                    </button>
+                                    <button class="btn btn-outline-secondary">
+                                        <i class="fas fa-qrcode me-1"></i> QR Code
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Farm Stats -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Farm Stats</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <h5 class="mb-0">24</h5>
+                                        <small class="text-muted">Products</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h5 class="mb-0">128</h5>
+                                        <small class="text-muted">Customers</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h5 class="mb-0">4.7</h5>
+                                        <small class="text-muted">Rating</small>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <h5 class="mb-0">15</h5>
+                                        <small class="text-muted">Acres</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h5 class="mb-0">8</h5>
+                                        <small class="text-muted">Employees</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h5 class="mb-0">12</h5>
+                                        <small class="text-muted">Years</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Farm Certifications -->
+                        <div class="card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Certifications</h5>
+                                <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addCertificationModal">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <span class="certification-badge">
+                                    <i class="fas fa-certificate me-1"></i> USDA Organic
+                                </span>
+                                <span class="certification-badge">
+                                    <i class="fas fa-certificate me-1"></i> Non-GMO Project
+                                </span>
+                                <span class="certification-badge">
+                                    <i class="fas fa-certificate me-1"></i> Certified Humane
+                                </span>
+                                <span class="certification-badge">
+                                    <i class="fas fa-certificate me-1"></i> Local Food Hero
+                                </span>
+                                <span class="certification-badge">
+                                    <i class="fas fa-certificate me-1"></i> Sustainable Farming
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Farm Details -->
+                    <div class="col-lg-8">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <ul class="nav nav-pills mb-4" id="farmTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="overview-tab" data-bs-toggle="pill" data-bs-target="#overview" type="button">Overview</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="location-tab" data-bs-toggle="pill" data-bs-target="#location" type="button">Location</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="story-tab" data-bs-toggle="pill" data-bs-target="#story" type="button">Our Story</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="team-tab" data-bs-toggle="pill" data-bs-target="#team" type="button">Our Team</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="gallery-tab" data-bs-toggle="pill" data-bs-target="#gallery" type="button">Gallery</button>
+                                    </li>
+                                </ul>
+                                
+                                <div class="tab-content" id="farmTabsContent">
+                                    <!-- Overview Tab -->
+                                    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h4>Farm Overview</h4>
+                                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editOverviewModal">
+                                                <i class="fas fa-edit me-1"></i> Edit
+                                            </button>
+                                        </div>
+                                        <p>Sunny Acres Farm is a family-owned organic farm located in the fertile valleys of Oregon. We specialize in sustainable farming practices to bring you the freshest, most flavorful produce while protecting our environment for future generations.</p>
+                                        <p>Our farm spans 15 acres of certified organic land where we grow over 50 varieties of fruits and vegetables, raise free-range chickens for eggs, and maintain an apiary for raw honey production.</p>
+                                        <h5 class="mt-4">Farming Practices</h5>
+                                        <ul>
+                                            <li>100% organic and sustainable farming methods</li>
+                                            <li>Regenerative agriculture to improve soil health</li>
+                                            <li>Integrated pest management without synthetic chemicals</li>
+                                            <li>Water conservation through drip irrigation</li>
+                                            <li>Renewable energy powered operations</li>
+                                        </ul>
+                                        <h5 class="mt-4">Farm Features</h5>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="d-flex mb-2">
+                                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                                    <span>Farm stand open daily</span>
+                                                </div>
+                                                <div class="d-flex mb-2">
+                                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                                    <span>CSA program available</span>
+                                                </div>
+                                                <div class="d-flex mb-2">
+                                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                                    <span>Farm tours by appointment</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="d-flex mb-2">
+                                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                                    <span>Educational workshops</span>
+                                                </div>
+                                                <div class="d-flex mb-2">
+                                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                                    <span>Seasonal events</span>
+                                                </div>
+                                                <div class="d-flex mb-2">
+                                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                                    <span>Wedding/event venue</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Location Tab -->
+                                    <div class="tab-pane fade" id="location" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h4>Farm Location</h4>
+                                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editLocationModal">
+                                                <i class="fas fa-edit me-1"></i> Edit
+                                            </button>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5>Address</h5>
+                                                <p>
+                                                    1234 Farm Road<br>
+                                                    Springfield, OR 97478<br>
+                                                    United States
+                                                </p>
+                                                <h5 class="mt-4">Contact</h5>
+                                                <p>
+                                                    <i class="fas fa-phone me-2"></i> (541) 555-1234<br>
+                                                    <i class="fas fa-envelope me-2"></i> info@sunnyacres.farm<br>
+                                                    <i class="fas fa-globe me-2"></i> www.sunnyacres.farm
+                                                </p>
+                                                <h5 class="mt-4">Hours</h5>
+                                                <p>
+                                                    <strong>Farm Stand:</strong><br>
+                                                    Monday-Friday: 9am - 6pm<br>
+                                                    Saturday: 8am - 5pm<br>
+                                                    Sunday: 10am - 4pm
+                                                </p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="farm-map" id="farmMap">
+                                                    <!-- Map will be loaded here -->
+                                                </div>
+                                                <div class="d-grid gap-2 mt-3">
+                                                    <button class="btn btn-success">
+                                                        <i class="fas fa-directions me-1"></i> Get Directions
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Story Tab -->
+                                    <div class="tab-pane fade" id="story" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h4>Our Story</h4>
+                                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editStoryModal">
+                                                <i class="fas fa-edit me-1"></i> Edit
+                                            </button>
+                                        </div>
+                                        <img src="assets/farm-history.jpg" class="img-fluid rounded mb-4" alt="Farm History">
+                                        <h5>Our Beginnings</h5>
+                                        <p>Founded in 1985 by John and Mary Johnson, Sunny Acres Farm started as a small 5-acre plot with a dream to grow food the right way - without chemicals, with respect for the land, and with care for the community.</p>
+                                        <h5 class="mt-4">Growth & Evolution</h5>
+                                        <p>Over the years, we've expanded our operations to 15 acres, added new crops, and developed relationships with local restaurants and markets. In 2010, we transitioned to 100% organic practices and became certified.</p>
+                                        <h5 class="mt-4">Our Philosophy</h5>
+                                        <p>We believe in farming that nourishes both people and planet. Our practices focus on soil health, biodiversity, and sustainability. We're proud to be part of a growing movement that values transparency in food production.</p>
+                                        <h5 class="mt-4">The Future</h5>
+                                        <p>As we look ahead, we're excited about expanding our educational programs, developing more perennial crops, and continuing to innovate in sustainable agriculture. We're committed to passing on a thriving farm to the next generation.</p>
+                                    </div>
+                                    
+                                    <!-- Team Tab -->
+                                    <div class="tab-pane fade" id="team" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h4>Our Team</h4>
+                                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addTeamMemberModal">
+                                                <i class="fas fa-plus me-1"></i> Add Member
+                                            </button>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4 mb-4">
+                                                <div class="card h-100">
+                                                    <img src="assets/farmer-john.jpg" class="card-img-top" alt="John Johnson">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">John Johnson</h5>
+                                                        <h6 class="card-subtitle mb-2 text-muted">Founder & Farm Manager</h6>
+                                                        <p class="card-text">With over 35 years of farming experience, John oversees all operations and specializes in soil health.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-4">
+                                                <div class="card h-100">
+                                                    <img src="assets/farmer-mary.jpg" class="card-img-top" alt="Mary Johnson">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">Mary Johnson</h5>
+                                                        <h6 class="card-subtitle mb-2 text-muted">Co-Founder & Marketing</h6>
+                                                        <p class="card-text">Mary handles customer relations, markets, and our CSA program with a focus on community building.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-4">
+                                                <div class="card h-100">
+                                                    <img src="assets/farmer-sarah.jpg" class="card-img-top" alt="Sarah Johnson">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">Sarah Johnson</h5>
+                                                        <h6 class="card-subtitle mb-2 text-muted">Operations Manager</h6>
+                                                        <p class="card-text">The next generation, Sarah brings tech-savvy solutions to traditional farming practices.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Gallery Tab -->
+                                    <div class="tab-pane fade" id="gallery" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h4>Farm Gallery</h4>
+                                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addGalleryImageModal">
+                                                <i class="fas fa-plus me-1"></i> Add Photos
+                                            </button>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-6 col-md-4 col-lg-3">
+                                                <img src="assets/gallery1.jpg" class="img-fluid rounded farm-gallery-img" alt="Farm Gallery">
+                                            </div>
+                                            <div class="col-6 col-md-4 col-lg-3">
+                                                <img src="assets/gallery2.jpg" class="img-fluid rounded farm-gallery-img" alt="Farm Gallery">
+                                            </div>
+                                            <div class="col-6 col-md-4 col-lg-3">
+                                                <img src="assets/gallery3.jpg" class="img-fluid rounded farm-gallery-img" alt="Farm Gallery">
+                                            </div>
+                                            <div class="col-6 col-md-4 col-lg-3">
+                                                <img src="assets/gallery4.jpg" class="img-fluid rounded farm-gallery-img" alt="Farm Gallery">
+                                            </div>
+                                            <div class="col-6 col-md-4 col-lg-3">
+                                                <img src="assets/gallery5.jpg" class="img-fluid rounded farm-gallery-img" alt="Farm Gallery">
+                                            </div>
+                                            <div class="col-6 col-md-4 col-lg-3">
+                                                <img src="assets/gallery6.jpg" class="img-fluid rounded farm-gallery-img" alt="Farm Gallery">
+                                            </div>
+                                            <div class="col-6 col-md-4 col-lg-3">
+                                                <img src="assets/gallery7.jpg" class="img-fluid rounded farm-gallery-img" alt="Farm Gallery">
+                                            </div>
+                                            <div class="col-6 col-md-4 col-lg-3">
+                                                <img src="assets/gallery8.jpg" class="img-fluid rounded farm-gallery-img" alt="Farm Gallery">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Change Logo Modal -->
+    <div class="modal fade" id="changeLogoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Farm Logo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <img src="assets/farm-logo.jpg" id="logoPreview" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    </div>
+                    <form id="logoForm">
+                        <div class="mb-3">
+                            <label class="form-label">Upload New Logo</label>
+                            <input type="file" class="form-control" id="logoUpload" accept="image/*">
+                            <div class="form-text">Recommended size: 500x500 pixels</div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Certification Modal -->
+    <div class="modal fade" id="addCertificationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Certification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="certificationForm">
+                        <div class="mb-3">
+                            <label class="form-label">Certification Name</label>
+                            <input type="text" class="form-control" placeholder="e.g., USDA Organic">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Issuing Organization</label>
+                            <input type="text" class="form-control" placeholder="e.g., USDA">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Certification ID</label>
+                            <input type="text" class="form-control" placeholder="Optional">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Expiration Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Certification Image/Badge</label>
+                            <input type="file" class="form-control" accept="image/*">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus me-2"></i> Add Certification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Overview Modal -->
+    <div class="modal fade" id="editOverviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Farm Overview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="overviewForm">
+                        <div class="mb-3">
+                            <label class="form-label">Farm Description</label>
+                            <textarea class="form-control" rows="5">Sunny Acres Farm is a family-owned organic farm located in the fertile valleys of Oregon. We specialize in sustainable farming practices to bring you the freshest, most flavorful produce while protecting our environment for future generations.</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Farming Practices</label>
+                            <textarea class="form-control" rows="5">- 100% organic and sustainable farming methods
+- Regenerative agriculture to improve soil health
+- Integrated pest management without synthetic chemicals
+- Water conservation through drip irrigation
+- Renewable energy powered operations</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Farm Features</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="farmStandCheck" checked>
+                                        <label class="form-check-label" for="farmStandCheck">Farm stand open daily</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="csaCheck" checked>
+                                        <label class="form-check-label" for="csaCheck">CSA program available</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="toursCheck" checked>
+                                        <label class="form-check-label" for="toursCheck">Farm tours by appointment</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="workshopsCheck" checked>
+                                        <label class="form-check-label" for="workshopsCheck">Educational workshops</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="eventsCheck" checked>
+                                        <label class="form-check-label" for="eventsCheck">Seasonal events</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="venueCheck">
+                                        <label class="form-check-label" for="venueCheck">Wedding/event venue</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Location Modal -->
+    <div class="modal fade" id="editLocationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Farm Location</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="locationForm">
+                        <div class="mb-3">
+                            <label class="form-label">Farm Name</label>
+                            <input type="text" class="form-control" value="Sunny Acres Farm">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address Line 1</label>
+                            <input type="text" class="form-control" value="1234 Farm Road">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address Line 2</label>
+                            <input type="text" class="form-control" placeholder="Optional">
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-control" value="Springfield">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">State/Province</label>
+                                <input type="text" class="form-control" value="Oregon">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">ZIP</label>
+                                <input type="text" class="form-control" value="97478">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Country</label>
+                            <select class="form-select">
+                                <option>United States</option>
+                                <option>Canada</option>
+                                <option>United Kingdom</option>
+                                <!-- More countries would be added -->
+                            </select>
+                        </div>
+                        <hr>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" value="(541) 555-1234">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" value="info@sunnyacres.farm">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Website</label>
+                            <input type="url" class="form-control" value="www.sunnyacres.farm">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Story Modal -->
+    <div class="modal fade" id="editStoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Farm Story</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="storyForm">
+                        <div class="mb-3">
+                            <label class="form-label">Our Beginnings</label>
+                            <textarea class="form-control" rows="4">Founded in 1985 by John and Mary Johnson, Sunny Acres Farm started as a small 5-acre plot with a dream to grow food the right way - without chemicals, with respect for the land, and with care for the community.</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Growth & Evolution</label>
+                            <textarea class="form-control" rows="4">Over the years, we've expanded our operations to 15 acres, added new crops, and developed relationships with local restaurants and markets. In 2010, we transitioned to 100% organic practices and became certified.</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Our Philosophy</label>
+                            <textarea class="form-control" rows="4">We believe in farming that nourishes both people and planet. Our practices focus on soil health, biodiversity, and sustainability. We're proud to be part of a growing movement that values transparency in food production.</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">The Future</label>
+                            <textarea class="form-control" rows="4">As we look ahead, we're excited about expanding our educational programs, developing more perennial crops, and continuing to innovate in sustainable agriculture. We're committed to passing on a thriving farm to the next generation.</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Story Image</label>
+                            <input type="file" class="form-control" accept="image/*">
+                            <div class="form-text">This image appears at the top of your story section</div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Team Member Modal -->
+    <div class="modal fade" id="addTeamMemberModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Team Member</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="teamMemberForm">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" placeholder="Full name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role/Position</label>
+                            <input type="text" class="form-control" placeholder="e.g., Farm Manager">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Bio</label>
+                            <textarea class="form-control" rows="3" placeholder="Brief description of their role and background"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Photo</label>
+                            <input type="file" class="form-control" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Display Order</label>
+                            <input type="number" class="form-control" value="1" min="1">
+                            <div class="form-text">Lower numbers appear first</div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus me-2"></i> Add Team Member
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Gallery Image Modal -->
+    <div class="modal fade" id="addGalleryImageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Gallery Images</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="galleryForm">
+                        <div class="mb-3">
+                            <label class="form-label">Upload Images</label>
+                            <input type="file" class="form-control" accept="image/*" multiple>
+                            <div class="form-text">Select multiple images to upload at once</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Image Category</label>
+                            <select class="form-select">
+                                <option>Farm Scenes</option>
+                                <option>Products</option>
+                                <option>Team</option>
+                                <option>Events</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Caption (optional)</label>
+                            <input type="text" class="form-control" placeholder="Brief description for all images">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus me-2"></i> Upload Images
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Leaflet JS for Maps -->
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Initialize farm profile when DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initFarmMap();
+            setupEventListeners();
+        });
+
+        // Initialize farm map
+        function initFarmMap() {
+            const map = L.map('farmMap').setView([44.0462, -123.0223], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Add farm marker
+            L.marker([44.0462, -123.0223]).addTo(map)
+                .bindPopup('Sunny Acres Farm')
+                .openPopup();
+            
+            // Add farm boundary (example)
+            const farmBoundary = L.polygon([
+                [44.048, -123.025],
+                [44.048, -123.020],
+                [44.044, -123.020],
+                [44.044, -123.025]
+            ], {color: '#4CAF50', fillOpacity: 0.2}).addTo(map);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Connect wallet
+            document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
+            
+            // Logo upload preview
+            document.getElementById('logoUpload').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        document.getElementById('logoPreview').src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Form submissions
+            document.getElementById('logoForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Farm logo updated successfully');
+                $('#changeLogoModal').modal('hide');
+            });
+            
+            document.getElementById('certificationForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Certification added successfully');
+                $('#addCertificationModal').modal('hide');
+            });
+            
+            // Add similar form submission handlers for other modals
+        }
+
+        // Connect wallet function
+        async function connectWallet() {
+            try {
+                if (window.ethereum) {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const walletBtn = document.getElementById('connectWalletBtn');
+                    const walletStatus = document.getElementById('walletStatus');
+                    
+                    walletBtn.classList.remove('btn-outline-secondary');
+                    walletBtn.classList.add('btn-success');
+                    walletStatus.innerHTML = `${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}`;
+                    
+                    // Load farmer data from blockchain
+                    loadFarmerData(accounts[0]);
+                } else {
+                    alert('Please install MetaMask!');
+                }
+            } catch (error) {
+                console.error('Wallet connection failed:', error);
+            }
+        }
+
+        // Load farmer data from blockchain
+        async function loadFarmerData(walletAddress) {
+            // In a real app, you would query your smart contract
+            console.log(`Loading data for farmer: ${walletAddress}`);
+        }
+    </script>
+</body>
+</html>

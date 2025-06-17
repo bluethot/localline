@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Farms | Greenbles.ng</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --green-primary: #28a745;
+            --green-dark: #218838;
+            --green-light: #d4edda;
+            --yellow-accent: #ffc107;
+            --brown-accent: #8B4513;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            background-color: var(--green-dark);
+            color: white;
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+        
+        .farm-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .farm-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .maize-badge {
+            background-color: var(--yellow-accent);
+            color: black;
+        }
+        
+        .cassava-badge {
+            background-color: var(--brown-accent);
+            color: white;
+        }
+        
+        .farm-header {
+            position: relative;
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .farm-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            padding: 15px;
+            color: white;
+        }
+        
+        .progress-thin {
+            height: 8px;
+        }
+        
+        .milestone {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .milestone.completed::before {
+            background-color: var(--green-primary);
+        }
+        
+        .milestone::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #dee2e6;
+            border: 3px solid white;
+        }
+        
+        .milestone.completed::after {
+            content: "\2713";
+            position: absolute;
+            left: 4px;
+            top: 1px;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 9px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #dee2e6;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.7rem;
+        }
+        
+        .crop-health {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .health-excellent {
+            background-color: var(--green-primary);
+        }
+        
+        .health-good {
+            background-color: #ffc107;
+        }
+        
+        .health-fair {
+            background-color: #fd7e14;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar p-0">
+                <div class="p-4">
+                    <h4 class="text-center mb-4">
+                        <i class="bi bi-tree"></i> Greenbles<span class="fw-light">.ng</span>
+                    </h4>
+                    <hr class="bg-light">
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="myfarm.html">
+                                <i class="bi bi-grid"></i> My Farms
+                                <span class="badge bg-success notification-badge">3</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="roi-tracker.html">
+                                <i class="bi bi-graph-up"></i> ROI Tracker
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="reports.html">
+                                <i class="bi bi-file-earmark-text"></i> Reports
+                                <span class="badge bg-warning notification-badge">2</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="withdrawals.html">
+                                <i class="bi bi-cash-stack"></i> Withdrawals
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="tours.html">
+                                <i class="bi bi-calendar-event"></i> Farm Tours
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="settings.html">
+                                <i class="bi bi-gear"></i> Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4">
+                <!-- Top Bar -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>My Farm Investments</h2>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newInvestmentModal">
+                        <i class="bi bi-plus"></i> New Investment
+                    </button>
+                </div>
+
+                <!-- Farm Filter -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3 mb-md-0">
+                                <label class="form-label">Crop Type</label>
+                                <select class="form-select">
+                                    <option>All Crops</option>
+                                    <option>Maize</option>
+                                    <option>Cassava</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3 mb-md-0">
+                                <label class="form-label">Status</label>
+                                <select class="form-select">
+                                    <option>All Statuses</option>
+                                    <option>Active</option>
+                                    <option>Completed</option>
+                                    <option>Upcoming</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Sort By</label>
+                                <select class="form-select">
+                                    <option>Recent First</option>
+                                    <option>Oldest First</option>
+                                    <option>Highest Investment</option>
+                                    <option>Highest ROI</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Farm Cards -->
+                <div class="row">
+                    <!-- Farm 1 -->
+                    <div class="col-lg-6">
+                        <div class="farm-card">
+                            <div class="farm-header" style="background-image: url('https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');">
+                                <div class="farm-overlay">
+                                    <h4>Maize Farm #MG-2023-05</h4>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge maize-badge">Maize</span>
+                                        <span class="badge bg-success">Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Investment</h6>
+                                        <h5>₦800,000</h5>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">Projected Return</h6>
+                                        <h5>₦1,200,000</h5>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">ROI</h6>
+                                        <h5 class="text-success">30%</h5>
+                                    </div>
+                                </div>
+                                
+                                <h6 class="mt-3 mb-2">Progress</h6>
+                                <div class="progress progress-thin mb-2">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 65%;"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <small>Planted: May 15, 2023</small>
+                                    <small>Harvest: Aug 30, 2023</small>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Location</h6>
+                                        <p class="mb-0">Ayetoro, Ogun State</p>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">Crop Health</h6>
+                                        <div class="d-flex align-items-center">
+                                            <span class="crop-health health-excellent me-1"></span>
+                                            <span>Excellent</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button class="btn btn-outline-success me-md-2">
+                                        <i class="bi bi-file-earmark-text"></i> Report
+                                    </button>
+                                    <button class="btn btn-success">
+                                        <i class="bi bi-eye"></i> View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Farm 2 -->
+                    <div class="col-lg-6">
+                        <div class="farm-card">
+                            <div class="farm-header" style="background-image: url('https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');">
+                                <div class="farm-overlay">
+                                    <h4>Cassava Farm #CG-2023-02</h4>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge cassava-badge">Cassava</span>
+                                        <span class="badge bg-success">Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Investment</h6>
+                                        <h5>₦1,500,000</h5>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">Projected Return</h6>
+                                        <h5>₦2,250,000</h5>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">ROI</h6>
+                                        <h5 class="text-success">35%</h5>
+                                    </div>
+                                </div>
+                                
+                                <h6 class="mt-3 mb-2">Progress</h6>
+                                <div class="progress progress-thin mb-2">
+                                    <div class="progress-bar" role="progressbar" style="width: 40%; background-color: #8B4513;"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <small>Planted: Mar 10, 2023</small>
+                                    <small>Harvest: Dec 15, 2023</small>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Location</h6>
+                                        <p class="mb-0">Ijebu-Ode, Ogun State</p>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">Crop Health</h6>
+                                        <div class="d-flex align-items-center">
+                                            <span class="crop-health health-good me-1"></span>
+                                            <span>Good</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button class="btn btn-outline-success me-md-2">
+                                        <i class="bi bi-file-earmark-text"></i> Report
+                                    </button>
+                                    <button class="btn btn-success">
+                                        <i class="bi bi-eye"></i> View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Farm 3 -->
+                    <div class="col-lg-6">
+                        <div class="farm-card">
+                            <div class="farm-header" style="background-image: url('https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');">
+                                <div class="farm-overlay">
+                                    <h4>Maize Farm #MG-2023-08</h4>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge maize-badge">Maize</span>
+                                        <span class="badge bg-primary">Upcoming</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Investment</h6>
+                                        <h5>₦1,950,000</h5>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">Projected Return</h6>
+                                        <h5>₦2,925,000</h5>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">ROI</h6>
+                                        <h5 class="text-success">30%</h5>
+                                    </div>
+                                </div>
+                                
+                                <h6 class="mt-3 mb-2">Progress</h6>
+                                <div class="progress progress-thin mb-2">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 20%;"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <small>Planting: Jun 20, 2023</small>
+                                    <small>Harvest: Oct 30, 2023</small>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Location</h6>
+                                        <p class="mb-0">Ibadan, Oyo State</p>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">Status</h6>
+                                        <div class="d-flex align-items-center">
+                                            <span class="crop-health me-1" style="background-color: #6c757d;"></span>
+                                            <span>Pre-planting</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button class="btn btn-outline-secondary me-md-2" disabled>
+                                        <i class="bi bi-file-earmark-text"></i> Report
+                                    </button>
+                                    <button class="btn btn-success">
+                                        <i class="bi bi-eye"></i> View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Completed Farm -->
+                    <div class="col-lg-6">
+                        <div class="farm-card">
+                            <div class="farm-header" style="background-image: url('https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');">
+                                <div class="farm-overlay">
+                                    <h4>Maize Farm #MG-2022-11</h4>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge maize-badge">Maize</span>
+                                        <span class="badge bg-secondary">Completed</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Investment</h6>
+                                        <h5>₦1,200,000</h5>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">Actual Return</h6>
+                                        <h5>₦1,680,000</h5>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">ROI</h6>
+                                        <h5 class="text-success">40%</h5>
+                                    </div>
+                                </div>
+                                
+                                <h6 class="mt-3 mb-2">Progress</h6>
+                                <div class="progress progress-thin mb-2">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%;"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <small>Planted: Nov 5, 2022</small>
+                                    <small>Harvested: May 10, 2023</small>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Location</h6>
+                                        <p class="mb-0">Abeokuta, Ogun State</p>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted mb-1">Yield</h6>
+                                        <p class="mb-0">2.8T/Ha</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button class="btn btn-outline-success me-md-2">
+                                        <i class="bi bi-file-earmark-text"></i> Final Report
+                                    </button>
+                                    <button class="btn btn-success">
+                                        <i class="bi bi-arrow-repeat"></i> Reinvest
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Farm Details Modal -->
+                <div class="modal fade" id="farmDetailsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Maize Farm #MG-2023-05 Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-4">
+                                            <h6>Farm Overview</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Crop Type</td>
+                                                            <td><span class="badge maize-badge">Maize</span></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Location</td>
+                                                            <td>Ayetoro, Ogun State</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Hectares</td>
+                                                            <td>1.0 Ha</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Investment</td>
+                                                            <td>₦800,000</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Projected Return</td>
+                                                            <td>₦1,200,000</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>ROI</td>
+                                                            <td class="text-success">30%</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Status</td>
+                                                            <td><span class="badge bg-success">Active</span></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h6>Key Dates</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Investment Date</td>
+                                                            <td>May 1, 2023</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Planting Date</td>
+                                                            <td>May 15, 2023</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Expected Harvest</td>
+                                                            <td>Aug 30, 2023</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Payout Date</td>
+                                                            <td>Sep 15, 2023</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Growth Timeline</h6>
+                                        <div class="timeline">
+                                            <div class="milestone completed">
+                                                <h6>Land Preparation</h6>
+                                                <p class="text-muted">Completed May 10, 2023</p>
+                                            </div>
+                                            <div class="milestone completed">
+                                                <h6>Planting</h6>
+                                                <p class="text-muted">Completed May 15, 2023</p>
+                                            </div>
+                                            <div class="milestone completed">
+                                                <h6>First Weeding</h6>
+                                                <p class="text-muted">Completed Jun 5, 2023</p>
+                                            </div>
+                                            <div class="milestone">
+                                                <h6>Fertilizer Application</h6>
+                                                <p class="text-muted">Expected Jun 25, 2023</p>
+                                            </div>
+                                            <div class="milestone">
+                                                <h6>Second Weeding</h6>
+                                                <p class="text-muted">Expected Jul 15, 2023</p>
+                                            </div>
+                                            <div class="milestone">
+                                                <h6>Harvest</h6>
+                                                <p class="text-muted">Expected Aug 30, 2023</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <h6>Recent Photos</h6>
+                                <div class="row g-2 mb-4">
+                                    <div class="col-4">
+                                        <img src="https://via.placeholder.com/300x200?text=Farm+Photo+June+15" class="img-fluid rounded">
+                                    </div>
+                                    <div class="col-4">
+                                        <img src="https://via.placeholder.com/300x200?text=Farm+Photo+June+1" class="img-fluid rounded">
+                                    </div>
+                                    <div class="col-4">
+                                        <img src="https://via.placeholder.com/300x200?text=Farm+Photo+May+20" class="img-fluid rounded">
+                                    </div>
+                                </div>
+                                
+                                <h6>Performance Metrics</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card mb-3">
+                                            <div class="card-body text-center">
+                                                <h3 class="text-success">65%</h3>
+                                                <p class="text-muted mb-0">Growth Progress</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card mb-3">
+                                            <div class="card-body text-center">
+                                                <h3 class="text-success">98%</h3>
+                                                <p class="text-muted mb-0">Plant Survival</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card mb-3">
+                                            <div class="card-body text-center">
+                                                <h3 class="text-success">2.7T</h3>
+                                                <p class="text-muted mb-0">Projected Yield</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-success">View Full Report</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- New Investment Modal -->
+                <div class="modal fade" id="newInvestmentModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">New Farm Investment</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+                                    <div class="mb-3">
+                                        <label class="form-label">Select Farm</label>
+                                        <select class="form-select">
+                                            <option>Maize Farm - Ayetoro, Ogun (6 months)</option>
+                                            <option>Cassava Farm - Ijebu-Ode, Ogun (12 months)</option>
+                                            <option>Maize Farm - Ibadan, Oyo (6 months)</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Hectares to Invest</label>
+                                        <input type="number" class="form-control" min="1" value="1">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Total Investment</label>
+                                        <input type="text" class="form-control" value="₦800,000" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Payment Method</label>
+                                        <select class="form-select">
+                                            <option>Bank Transfer</option>
+                                            <option>Paystack</option>
+                                            <option>Flutterwave</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="termsCheck">
+                                        <label class="form-check-label" for="termsCheck">
+                                            I agree to the <a href="#">investment terms</a>
+                                        </label>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-success">Proceed to Payment</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

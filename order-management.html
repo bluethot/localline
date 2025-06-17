@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management | FarmChain Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+            --sidebar-width: 280px;
+        }
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--primary-green) 100%);
+            width: var(--sidebar-width);
+            min-height: 100vh;
+            position: fixed;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            padding: 10px 15px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+        }
+        .stat-card {
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-pending {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+        .status-processing {
+            background-color: #CCE5FF;
+            color: #004085;
+        }
+        .status-shipped {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+        .status-delivered {
+            background-color: #D1E7DD;
+            color: #0F5132;
+        }
+        .status-cancelled {
+            background-color: #F8D7DA;
+            color: #721C24;
+        }
+        .status-refunded {
+            background-color: #E2E3E5;
+            color: #383D41;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #6c757d;
+        }
+        .search-box input {
+            padding-left: 40px;
+        }
+        .filter-dropdown .dropdown-menu {
+            width: 300px;
+            padding: 15px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        #ordersTable th {
+            white-space: nowrap;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+        .order-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .order-timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        .timeline-step {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #adb5bd;
+            border: 3px solid #e9ecef;
+        }
+        .timeline-step.completed::before {
+            background-color: var(--primary-green);
+            border-color: #D4EDDA;
+        }
+        .timeline-step.active::before {
+            background-color: #FFC107;
+            border-color: #FFF3CD;
+        }
+        .timeline-step.cancelled::before {
+            background-color: #DC3545;
+            border-color: #F8D7DA;
+        }
+        .timeline-step h6 {
+            font-weight: 600;
+        }
+        .timeline-step p {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        .product-img-thumb {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .action-btns .btn {
+            min-width: 100px;
+        }
+        .order-summary-card {
+            border-left: 4px solid var(--primary-green);
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar text-white p-0">
+            <div class="p-3">
+                <h4 class="text-center mb-4">
+                    <i class="fas fa-leaf me-2"></i>FarmChain
+                </h4>
+                <hr class="bg-light">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="farmer-verification.html">
+                            <i class="fas fa-user-check"></i> Farmer Verification
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="productmoderation.html">
+                            <i class="fas fa-apple-alt"></i> Product Moderation
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="ordermanagement.html">
+                            <i class="fas fa-shopping-bag"></i> Order Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="disputes.html">
+                            <i class="fas fa-exclamation-triangle"></i> Disputes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="analytics.html">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="settings.html">
+                            <i class="fas fa-cog"></i> System Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="container-fluid px-4 py-4">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h3 mb-0">Order Management</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Order Management</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createOrderModal">
+                            <i class="fas fa-plus me-2"></i>Create Order
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Today's Orders</h6>
+                                        <h3 class="mb-0">24</h3>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-shopping-bag text-primary"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 15% from yesterday
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Pending Fulfillment</h6>
+                                        <h3 class="mb-0">18</h3>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-clock text-warning"></i>
+                                    </div>
+                                </div>
+                                <p class="text-danger small mt-2 mb-0">
+                                    <i class="fas fa-exclamation-circle me-1"></i> Needs attention
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">This Week's Revenue</h6>
+                                        <h3 class="mb-0">$2,845</h3>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-dollar-sign text-success"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 22% from last week
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Avg. Order Value</h6>
+                                        <h3 class="mb-0">$118.54</h3>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-chart-line text-info"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 8% from last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters and Search -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" class="form-control" placeholder="Search orders by ID, customer, or farmer..." id="searchInput">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex">
+                                    <div class="filter-dropdown me-2">
+                                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-filter me-2"></i>Filters
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                                            <h6 class="dropdown-header">Filter Options</h6>
+                                            <div class="mb-3">
+                                                <label class="form-label">Status</label>
+                                                <select class="form-select" id="statusFilter">
+                                                    <option value="">All Statuses</option>
+                                                    <option value="pending">Pending</option>
+                                                    <option value="processing">Processing</option>
+                                                    <option value="shipped">Shipped</option>
+                                                    <option value="delivered">Delivered</option>
+                                                    <option value="cancelled">Cancelled</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Date Range</label>
+                                                <input type="text" class="form-control date-range" placeholder="Select date range">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Order Value</label>
+                                                <select class="form-select" id="valueFilter">
+                                                    <option value="">Any Value</option>
+                                                    <option value="small">Under $50</option>
+                                                    <option value="medium">$50 - $150</option>
+                                                    <option value="large">Over $150</option>
+                                                </select>
+                                            </div>
+                                            <button class="btn btn-sm btn-success w-100">Apply Filters</button>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline-secondary" id="exportBtn">
+                                        <i class="fas fa-download me-2"></i>Export
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="ordersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Farmer</th>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Payment</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>ORD-1001</td>
+                                        <td>John Smith</td>
+                                        <td>Green Valley Organics</td>
+                                        <td>2023-06-12</td>
+                                        <td>3</td>
+                                        <td>$45.98</td>
+                                        <td><span class="badge bg-success">Paid</span></td>
+                                        <td><span class="status-badge status-processing">Processing</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1 view-details" data-bs-toggle="modal" data-bs-target="#orderModal">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success fulfill-btn">
+                                                <i class="fas fa-truck"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>ORD-1002</td>
+                                        <td>Sarah Johnson</td>
+                                        <td>Sunny Acres Farm</td>
+                                        <td>2023-06-11</td>
+                                        <td>5</td>
+                                        <td>$78.45</td>
+                                        <td><span class="badge bg-success">Paid</span></td>
+                                        <td><span class="status-badge status-shipped">Shipped</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1 view-details" data-bs-toggle="modal" data-bs-target="#orderModal">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success complete-btn">
+                                                <i class="fas fa-check-circle"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>ORD-1003</td>
+                                        <td>Michael Brown</td>
+                                        <td>Pasture Prime</td>
+                                        <td>2023-06-10</td>
+                                        <td>2</td>
+                                        <td>$32.50</td>
+                                        <td><span class="badge bg-warning">Pending</span></td>
+                                        <td><span class="status-badge status-pending">Pending</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1 view-details" data-bs-toggle="modal" data-bs-target="#orderModal">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger cancel-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <!-- More rows... -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav aria-label="Table pagination">
+                            <ul class="pagination justify-content-end mt-3">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Details - ORD-1001</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Order Timeline -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Order Timeline</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="order-timeline">
+                                        <div class="timeline-step completed">
+                                            <h6>Order Placed</h6>
+                                            <p>2023-06-12 09:24 AM</p>
+                                        </div>
+                                        <div class="timeline-step completed">
+                                            <h6>Payment Received</h6>
+                                            <p>2023-06-12 09:30 AM</p>
+                                        </div>
+                                        <div class="timeline-step active">
+                                            <h6>Processing</h6>
+                                            <p>Expected to ship by 2023-06-14</p>
+                                        </div>
+                                        <div class="timeline-step">
+                                            <h6>Shipped</h6>
+                                            <p>Not yet shipped</p>
+                                        </div>
+                                        <div class="timeline-step">
+                                            <h6>Delivered</h6>
+                                            <p>Estimated delivery: 2023-06-16</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Order Items -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Order Items</h6>
+                                    <button class="btn btn-sm btn-outline-secondary">Print Packing Slip</button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Product</th>
+                                                    <th>Price</th>
+                                                    <th>Qty</th>
+                                                    <th>Subtotal</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="https://via.placeholder.com/100" class="product-img-thumb me-2" alt="Organic Tomatoes">
+                                                            <div>
+                                                                <h6 class="mb-0">Organic Tomatoes</h6>
+                                                                <small class="text-muted">SKU: PR-1001</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>$2.99/lb</td>
+                                                    <td>5 lb</td>
+                                                    <td>$14.95</td>
+                                                    <td><span class="badge bg-warning">Pending</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="https://via.placeholder.com/100" class="product-img-thumb me-2" alt="Organic Cucumbers">
+                                                            <div>
+                                                                <h6 class="mb-0">Organic Cucumbers</h6>
+                                                                <small class="text-muted">SKU: PR-1004</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>$1.49/each</td>
+                                                    <td>4</td>
+                                                    <td>$5.96</td>
+                                                    <td><span class="badge bg-warning">Pending</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="https://via.placeholder.com/100" class="product-img-thumb me-2" alt="Organic Basil">
+                                                            <div>
+                                                                <h6 class="mb-0">Organic Basil</h6>
+                                                                <small class="text-muted">SKU: PR-1007</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>$3.50/bunch</td>
+                                                    <td>2 bunches</td>
+                                                    <td>$7.00</td>
+                                                    <td><span class="badge bg-warning">Pending</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Customer Notes -->
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Customer Notes</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i> Please pack the tomatoes carefully to avoid bruising during shipping.
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Admin Notes</label>
+                                        <textarea class="form-control" rows="3" placeholder="Add any notes about this order...">Customer requested careful packaging for tomatoes.</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <!-- Order Summary -->
+                            <div class="card mb-4 order-summary-card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Order Summary</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Subtotal:</span>
+                                        <span>$27.91</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Shipping:</span>
+                                        <span>$8.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Tax:</span>
+                                        <span>$2.07</span>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between fw-bold mb-3">
+                                        <span>Total:</span>
+                                        <span>$37.98</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Payment Method:</span>
+                                        <span>Credit Card (Visa ****4242)</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span>Payment Status:</span>
+                                        <span class="badge bg-success">Paid</span>
+                                    </div>
+                                    <hr>
+                                    <div class="mb-3">
+                                        <label class="form-label">Update Order Status</label>
+                                        <select class="form-select mb-2">
+                                            <option value="pending">Pending</option>
+                                            <option value="processing" selected>Processing</option>
+                                            <option value="shipped">Shipped</option>
+                                            <option value="delivered">Delivered</option>
+                                            <option value="cancelled">Cancelled</option>
+                                        </select>
+                                        <button class="btn btn-success w-100">Update Status</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Customer Information -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Customer Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="mb-3">John Smith</h6>
+                                    <p class="mb-1"><i class="fas fa-envelope me-2"></i> john.smith@example.com</p>
+                                    <p class="mb-1"><i class="fas fa-phone me-2"></i> (555) 123-4567</p>
+                                    <hr>
+                                    <h6 class="mb-3">Shipping Address</h6>
+                                    <address class="mb-3">
+                                        123 Main Street<br>
+                                        Apt 4B<br>
+                                        Anytown, CA 12345<br>
+                                        United States
+                                    </address>
+                                    <hr>
+                                    <h6 class="mb-3">Billing Address</h6>
+                                    <address>
+                                        Same as shipping address
+                                    </address>
+                                </div>
+                            </div>
+
+                            <!-- Shipping Information -->
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Shipping Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Shipping Method</label>
+                                        <input type="text" class="form-control" value="Standard Shipping (3-5 business days)" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tracking Number</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" placeholder="Not yet shipped">
+                                            <button class="btn btn-outline-secondary" type="button">Add</button>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Carrier</label>
+                                        <select class="form-select">
+                                            <option value="">Select carrier</option>
+                                            <option value="usps">USPS</option>
+                                            <option value="ups">UPS</option>
+                                            <option value="fedex">FedEx</option>
+                                            <option value="dhl">DHL</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-outline-danger">Cancel Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Order Modal -->
+    <div class="modal fade" id="createOrderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createOrderForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Select Customer</label>
+                                <select class="form-select" required>
+                                    <option value="">Select Customer</option>
+                                    <option value="cust1">John Smith</option>
+                                    <option value="cust2">Sarah Johnson</option>
+                                    <option value="cust3">Michael Brown</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Order Date</label>
+                                <input type="text" class="form-control" value="2023-06-13" readonly>
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Add Products</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table" id="productsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Price</th>
+                                                <th>Qty</th>
+                                                <th>Subtotal</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <select class="form-select product-select">
+                                                        <option value="">Select Product</option>
+                                                        <option value="PR-1001" selected>Organic Tomatoes</option>
+                                                        <option value="PR-1002">Honeycrisp Apples</option>
+                                                        <option value="PR-1003">Grass-Fed Beef</option>
+                                                    </select>
+                                                </td>
+                                                <td>$2.99/lb</td>
+                                                <td>
+                                                    <input type="number" class="form-control qty-input" value="2" min="1">
+                                                </td>
+                                                <td>$5.98</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-danger remove-product">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addProduct">
+                                    <i class="fas fa-plus me-1"></i>Add Product
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Shipping Method</label>
+                                <select class="form-select">
+                                    <option value="standard">Standard Shipping ($8.00)</option>
+                                    <option value="express">Express Shipping ($15.00)</option>
+                                    <option value="pickup">Local Pickup (Free)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Payment Method</label>
+                                <select class="form-select">
+                                    <option value="credit">Credit Card</option>
+                                    <option value="paypal">PayPal</option>
+                                    <option value="crypto">Cryptocurrency</option>
+                                    <option value="bank">Bank Transfer</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Customer Notes</label>
+                            <textarea class="form-control" rows="2" placeholder="Any special instructions from customer..."></textarea>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Order Summary</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Subtotal:</span>
+                                    <span>$5.98</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Shipping:</span>
+                                    <span>$8.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Tax:</span>
+                                    <span>$0.84</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between fw-bold">
+                                    <span>Total:</span>
+                                    <span>$14.82</span>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="createOrderForm" class="btn btn-success">Create Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#ordersTable').DataTable({
+                responsive: true,
+                dom: '<"top"f>rt<"bottom"lip><"clear">',
+                pageLength: 10,
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search orders...",
+                    lengthMenu: "Show _MENU_ entries per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    infoEmpty: "No entries found",
+                    infoFiltered: "(filtered from _MAX_ total entries)"
+                }
+            });
+
+            // Initialize date range picker
+            flatpickr(".date-range", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                defaultDate: ["2023-06-01", "2023-06-15"]
+            });
+
+            // Order action buttons
+            $('.fulfill-btn').click(function(e) {
+                e.stopPropagation();
+                const row = $(this).closest('tr');
+                const orderId = row.find('td:first').text();
+                fulfillOrder(orderId, row);
+            });
+
+            $('.complete-btn').click(function(e) {
+                e.stopPropagation();
+                const row = $(this).closest('tr');
+                const orderId = row.find('td:first').text();
+                completeOrder(orderId, row);
+            });
+
+            $('.cancel-btn').click(function(e) {
+                e.stopPropagation();
+                const row = $(this).closest('tr');
+                const orderId = row.find('td:first').text();
+                cancelOrder(orderId, row);
+            });
+
+            // Create order form - add product row
+            $('#addProduct').click(function() {
+                const newRow = `
+                    <tr>
+                        <td>
+                            <select class="form-select product-select">
+                                <option value="">Select Product</option>
+                                <option value="PR-1001">Organic Tomatoes</option>
+                                <option value="PR-1002">Honeycrisp Apples</option>
+                                <option value="PR-1003">Grass-Fed Beef</option>
+                            </select>
+                        </td>
+                        <td>$0.00</td>
+                        <td>
+                            <input type="number" class="form-control qty-input" value="1" min="1">
+                        </td>
+                        <td>$0.00</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger remove-product">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                $('#productsTable tbody').append(newRow);
+            });
+
+            // Remove product row
+            $(document).on('click', '.remove-product', function() {
+                $(this).closest('tr').remove();
+                updateOrderSummary();
+            });
+
+            // Product selection change
+            $(document).on('change', '.product-select', function() {
+                const price = getProductPrice($(this).val());
+                $(this).closest('tr').find('td:eq(1)').text(price);
+                updateRowTotal($(this).closest('tr'));
+                updateOrderSummary();
+            });
+
+            // Quantity input change
+            $(document).on('change', '.qty-input', function() {
+                updateRowTotal($(this).closest('tr'));
+                updateOrderSummary();
+            });
+
+            // Export button
+            $('#exportBtn').click(function() {
+                exportOrders();
+            });
+        });
+
+        // Get product price (mock function)
+        function getProductPrice(productId) {
+            const prices = {
+                'PR-1001': '$2.99/lb',
+                'PR-1002': '$1.49/lb',
+                'PR-1003': '$8.99/lb',
+                'PR-1004': '$1.49/each',
+                'PR-1007': '$3.50/bunch'
+            };
+            return prices[productId] || '$0.00';
+        }
+
+        // Update row total
+        function updateRowTotal(row) {
+            const priceText = row.find('td:eq(1)').text();
+            const price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+            const qty = parseInt(row.find('.qty-input').val());
+            const subtotal = (price * qty).toFixed(2);
+            row.find('td:eq(3)').text('$' + subtotal);
+        }
+
+        // Update order summary
+        function updateOrderSummary() {
+            let subtotal = 0;
+            $('#productsTable tbody tr').each(function() {
+                const subtotalText = $(this).find('td:eq(3)').text();
+                subtotal += parseFloat(subtotalText.replace(/[^0-9.]/g, ''));
+            });
+            
+            const shipping = 8.00; // Fixed shipping for demo
+            const tax = (subtotal * 0.08).toFixed(2);
+            const total = (parseFloat(subtotal) + parseFloat(shipping) + parseFloat(tax)).toFixed(2);
+            
+            $('.order-summary-card .d-flex:eq(0) span:eq(1)').text('$' + subtotal.toFixed(2));
+            $('.order-summary-card .d-flex:eq(1) span:eq(1)').text('$' + shipping.toFixed(2));
+            $('.order-summary-card .d-flex:eq(2) span:eq(1)').text('$' + tax);
+            $('.order-summary-card .fw-bold span:eq(1)').text('$' + total);
+        }
+
+        // Fulfill order function
+        async function fulfillOrder(orderId, row) {
+            try {
+                // In a real app, call your smart contract
+                // const contract = new web3.eth.Contract(abi, contractAddress);
+                // await contract.methods.fulfillOrder(orderId).send({ from: adminAddress });
+                
+                // For demo purposes, we'll just update the UI
+                row.find('.status-badge')
+                    .removeClass('status-pending status-processing')
+                    .addClass('status-shipped')
+                    .text('Shipped');
+                
+                row.find('.fulfill-btn').remove();
+                row.find('.complete-btn').removeClass('d-none');
+                
+                showToast('Order marked as shipped!', 'success');
+            } catch (error) {
+                console.error('Fulfillment failed:', error);
+                showToast('Fulfillment failed: ' + error.message, 'error');
+            }
+        }
+
+        // Complete order function
+        async function completeOrder(orderId, row) {
+            try {
+                // In a real app, call your smart contract
+                // const contract = new web3.eth.Contract(abi, contractAddress);
+                // await contract.methods.completeOrder(orderId).send({ from: adminAddress });
+                
+                // For demo purposes, we'll just update the UI
+                row.find('.status-badge')
+                    .removeClass('status-shipped')
+                    .addClass('status-delivered')
+                    .text('Delivered');
+                
+                row.find('.complete-btn').remove();
+                
+                showToast('Order marked as delivered!', 'success');
+            } catch (error) {
+                console.error('Completion failed:', error);
+                showToast('Completion failed: ' + error.message, 'error');
+            }
+        }
+
+        // Cancel order function
+        async function cancelOrder(orderId, row) {
+            try {
+                // In a real app, call your smart contract
+                // const contract = new web3.eth.Contract(abi, contractAddress);
+                // await contract.methods.cancelOrder(orderId).send({ from: adminAddress });
+                
+                // For demo purposes, we'll just update the UI
+                row.find('.status-badge')
+                    .removeClass('status-pending')
+                    .addClass('status-cancelled')
+                    .text('Cancelled');
+                
+                row.find('.cancel-btn').remove();
+                
+                showToast('Order cancelled.', 'success');
+            } catch (error) {
+                console.error('Cancellation failed:', error);
+                showToast('Cancellation failed: ' + error.message, 'error');
+            }
+        }
+
+        // Export orders
+        function exportOrders() {
+            // In a real app, this would generate a CSV/Excel file
+            showToast('Export started. Your download will begin shortly.', 'info');
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = $(`
+                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `);
+            
+            $('#toastContainer').remove();
+            $('body').append('<div id="toastContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 1100;"></div>');
+            $('#toastContainer').append(toast);
+            
+            const bsToast = new bootstrap.Toast(toast[0]);
+            bsToast.show();
+            
+            toast.on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }
+    </script>
+</body>
+</html>

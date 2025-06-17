@@ -1,0 +1,349 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Same head content as your main page -->
+    <title>Sunny Acres Farm | FarmChain</title
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+        }
+        .product-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .verification-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .farm-card {
+            border-left: 3px solid var(--primary-green);
+        }
+        .filter-card {
+            position: sticky;
+            top: 20px;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 50px;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        .timeline-icon {
+            position: absolute;
+            left: -40px;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-green);
+            color: white;
+        }
+    </style>
+</head>
+
+
+
+
+
+
+
+
+
+
+
+    
+<body>
+    <!-- Navigation (same as main page) -->
+
+    <!-- Farm Header Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    <img src="farm1.jpg" class="rounded-circle mb-3" width="150" alt="Sunny Acres Farm">
+                    <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+                        <span class="badge bg-success">USDA Organic</span>
+                        <span class="badge bg-success">Non-GMO</span>
+                        <span class="badge bg-success">Sustainable</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-share-alt me-1"></i> Share Farm
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <h1>Sunny Acres Farm</h1>
+                    <p class="lead">Family-owned since 1987, specializing in organic berries and stone fruits</p>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-map-marker-alt text-success me-2"></i>
+                        <span>123 Orchard Lane, Salinas, CA • 12 miles from you</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-phone text-success me-2"></i>
+                        <span>(555) 123-4567</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-envelope text-success me-2"></i>
+                        <span>contact@sunnyacres.com</span>
+                    </div>
+                    <div class="d-flex gap-2 mt-3">
+                        <button class="btn btn-success">
+                            <i class="fas fa-calendar-alt me-1"></i> Visit Farm
+                        </button>
+                        <button class="btn btn-outline-success">
+                            <i class="fas fa-question-circle me-1"></i> Ask Farmer
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="display-4 text-success mb-1">4.8</div>
+                            <div class="text-warning mb-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <p class="small text-muted">Based on 42 reviews</p>
+                            <button class="btn btn-sm btn-outline-success w-100">
+                                Read Reviews
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Farm Story Section -->
+    <section class="py-5 bg-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="mb-4">Our Story</h2>
+                    <p class="lead">Three generations of the Henderson family have worked this land since 1987. What began as a small fruit stand has grown into a thriving organic farm, but our commitment to sustainable practices and quality produce has never wavered.</p>
+                    <img src="farm-story.jpg" class="img-fluid rounded mt-4 mb-4" alt="Farm family">
+                    <p>We believe in farming that works with nature, not against it. Our berries are grown without synthetic pesticides, and we use integrated pest management and crop rotation to maintain healthy soil. Every strawberry you buy from us carries not just flavor, but a story of care and dedication.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Farm Products Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Farm Products</h2>
+                <div class="d-flex">
+                    <select class="form-select me-2">
+                        <option>Seasonal</option>
+                        <option>All Products</option>
+                        <option>Fruits</option>
+                        <option>Vegetables</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <!-- Product 1 -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card product-card h-100">
+                        <span class="verification-badge">
+                            <i class="fas fa-check-circle me-1"></i> Verified
+                        </span>
+                        <img src="strawberries.jpg" class="card-img-top" alt="Organic Strawberries">
+                        <div class="card-body">
+                            <h5 class="card-title mb-1">Organic Strawberries</h5>
+                            <p class="text-muted small mb-2">Harvested: June 5, 2023</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="text-success mb-0">$4.99/lb</h4>
+                                <div class="text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-sm btn-outline-primary view-details" data-id="1">
+                                    <i class="fas fa-eye me-1"></i> Details
+                                </button>
+                                <button class="btn btn-sm btn-success add-to-cart" data-id="1">
+                                    <i class="fas fa-cart-plus me-1"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- More products from this farm -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Farm Practices Section -->
+    <section class="py-5 bg-white">
+        <div class="container">
+            <h2 class="text-center mb-5">Our Farming Practices</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-success bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                                <i class="fas fa-leaf fa-2x text-success"></i>
+                            </div>
+                            <h4>Organic Certification</h4>
+                            <p>Certified USDA Organic since 2005. No synthetic pesticides, herbicides, or fertilizers used in our fields.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-success bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                                <i class="fas fa-water fa-2x text-success"></i>
+                            </div>
+                            <h4>Water Conservation</h4>
+                            <p>Drip irrigation and rainwater collection systems reduce water usage by 40% compared to conventional farms.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-success bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                                <i class="fas fa-bug fa-2x text-success"></i>
+                            </div>
+                            <h4>Pest Management</h4>
+                            <p>Beneficial insects and companion planting create a balanced ecosystem that naturally controls pests.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Farm Visit Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h2 class="mb-3">Visit Our Farm</h2>
+                    <p>Experience farm life firsthand with our seasonal tours and pick-your-own programs. Great for families, school groups, or anyone who wants to connect with where their food comes from.</p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                            Farm Tours
+                            <span class="badge bg-success rounded-pill">Every Saturday</span>
+                        </li>
+                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                            Pick-Your-Own
+                            <span class="badge bg-success rounded-pill">June-August</span>
+                        </li>
+                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                            Farm Stand
+                            <span class="badge bg-success rounded-pill">Daily 9AM-5PM</span>
+                        </li>
+                    </ul>
+                    <button class="btn btn-success btn-lg">
+                        <i class="fas fa-calendar-alt me-2"></i> Schedule a Visit
+                    </button>
+                </div>
+                <div class="col-lg-6">
+                    <div class="ratio ratio-16x9">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3221.234567890123!2d-121.12345678901234!3d36.12345678901234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzbCsDA3JzI0LjQiTiAxMjHCsDA3JzI0LjQiVw!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer (same as main page) -->
+
+    <!-- JavaScript (same as main page) -->
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+
+    
+<script>
+     In your main JavaScript file, add this function to handle farm store visits
+function loadFarmStore(farmId) {
+     In a real app, this would fetch farm data from your API/blockchain
+    const farms = [
+        {
+            id: 1,
+            name: "Sunny Acres Farm",
+            location: "Salinas, CA",
+            distance: "12 miles",
+            image: "farm1.jpg",
+            description: "Family-owned since 1987, specializing in organic berries and stone fruits.",
+            practices: ["USDA Organic", "Non-GMO", "Sustainable"],
+            products: [1, 2, 3], // Product IDs
+            rating: 4.8,
+            reviews: 42,
+            story: "Three generations of the Henderson family have worked this land...",
+            storyImage: "farm-story.jpg",
+            contact: {
+                phone: "(555) 123-4567",
+                email: "contact@sunnyacres.com",
+                address: "123 Orchard Lane, Salinas, CA"
+            },
+            visits: {
+                tours: "Every Saturday",
+                pickYourOwn: "June-August",
+                farmStand: "Daily 9AM-5PM"
+            }
+        }
+        // More farms...
+    ];
+    
+    const farm = farms.find(f => f.id == farmId);
+    
+    // Update the farm store page with this data
+    // This would be done on the farm-store.html page load
+    console.log("Loaded farm:", farm);
+}
+
+// Add this to your event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on the farm store page
+    if (window.location.pathname.includes('farm-store.html')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const farmId = urlParams.get('id');
+        if (farmId) {
+            loadFarmStore(farmId);
+        }
+    }
+});
+</script>
+
+</body>
+</html>

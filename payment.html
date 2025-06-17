@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmChain - Payments</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #388E3C;
+            --light-green: #8BC34A;
+        }
+        .sidebar {
+            height: 100vh;
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--primary-green) 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 8px;
+        }
+        .stat-card {
+            border-left: 4px solid var(--primary-green);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .payment-card {
+            transition: all 0.3s ease;
+        }
+        .payment-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .badge-paid {
+            background-color: #28A745;
+            color: white;
+        }
+        .badge-pending {
+            background-color: #FFC107;
+            color: black;
+        }
+        .badge-failed {
+            background-color: #DC3545;
+            color: white;
+        }
+        .badge-refunded {
+            background-color: #6C757D;
+            color: white;
+        }
+        .payment-method-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            background-color: #f8f9fa;
+        }
+        .crypto-wallet {
+            background: linear-gradient(135deg, #f7931a 0%, #f7931a 100%);
+            color: white;
+        }
+        .bank-transfer {
+            background: linear-gradient(135deg, #2196F3 0%, #2196F3 100%);
+            color: white;
+        }
+        .credit-card {
+            background: linear-gradient(135deg, #9C27B0 0%, #9C27B0 100%);
+            color: white;
+        }
+        .progress-thin {
+            height: 6px;
+        }
+        .nav-pills .nav-link.active {
+            background-color: var(--primary-green);
+        }
+        .nav-pills .nav-link {
+            color: #495057;
+        }
+        #paymentTabsContent {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar text-white p-0">
+                <div class="p-3">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-leaf me-2"></i>FarmChain
+                    </h4>
+                    <hr class="bg-light">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="product.html">
+                                <i class="fas fa-apple-alt"></i> Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="order.html">
+                                <i class="fas fa-shopping-bag"></i> Orders
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="inventory.html">
+                                <i class="fas fa-boxes"></i> Inventory
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="analytics.html">
+                                <i class="fas fa-chart-line"></i> Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="farm-profile.html">
+                                <i class="fas fa-tractor"></i> Farm Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="payments.html">
+                                <i class="fas fa-wallet"></i> Payments
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Top Bar -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Payments</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="connectWalletBtn">
+                                <i class="fas fa-wallet me-1"></i>
+                                <span id="walletStatus">Connect Wallet</span>
+                            </button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i> Sunny Acres Farm
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Sign out</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Revenue</h6>
+                                        <h3 class="mb-0">$8,427</h3>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-dollar-sign text-success"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 18% from last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Pending Payouts</h6>
+                                        <h3 class="mb-0">$1,245</h3>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-clock text-warning"></i>
+                                    </div>
+                                </div>
+                                <p class="text-danger small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 3 payments processing
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Next Payout</h6>
+                                        <h3 class="mb-0">$2,845</h3>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-calendar-check text-info"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-calendar-alt me-1"></i> Due in 3 days
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card stat-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Avg. Transaction</h6>
+                                        <h3 class="mb-0">$67.96</h3>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-chart-bar text-primary"></i>
+                                    </div>
+                                </div>
+                                <p class="text-success small mt-2 mb-0">
+                                    <i class="fas fa-arrow-up me-1"></i> 5% from last month
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Management Content -->
+                <div class="row">
+                    <!-- Payment Tabs -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <ul class="nav nav-pills mb-4" id="paymentTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="transactions-tab" data-bs-toggle="pill" data-bs-target="#transactions" type="button">Transactions</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="payouts-tab" data-bs-toggle="pill" data-bs-target="#payouts" type="button">Payouts</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="invoices-tab" data-bs-toggle="pill" data-bs-target="#invoices" type="button">Invoices</button>
+                                    </li>
+                                </ul>
+                                
+                                <div class="tab-content" id="paymentTabsContent">
+                                    <!-- Transactions Tab -->
+                                    <div class="tab-pane fade show active" id="transactions" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="mb-0">Recent Transactions</h5>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-filter me-1"></i> Filter
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#">All Transactions</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="#">Successful</a></li>
+                                                    <li><a class="dropdown-item" href="#">Pending</a></li>
+                                                    <li><a class="dropdown-item" href="#">Failed</a></li>
+                                                    <li><a class="dropdown-item" href="#">Refunded</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Customer</th>
+                                                        <th>Order</th>
+                                                        <th>Amount</th>
+                                                        <th>Method</th>
+                                                        <th>Status</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="payment-card">
+                                                        <td>Jun 15, 2023</td>
+                                                        <td>Sarah Johnson</td>
+                                                        <td>FC-1001</td>
+                                                        <td>$42.97</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="payment-method-icon credit-card">
+                                                                    <i class="fas fa-credit-card"></i>
+                                                                </div>
+                                                                <span>Credit Card</span>
+                                                            </div>
+                                                        </td>
+                                                        <td><span class="badge badge-paid">Paid</span></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="payment-card">
+                                                        <td>Jun 14, 2023</td>
+                                                        <td>Michael Chen</td>
+                                                        <td>FC-1002</td>
+                                                        <td>$67.45</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="payment-method-icon crypto-wallet">
+                                                                    <i class="fab fa-ethereum"></i>
+                                                                </div>
+                                                                <span>ETH</span>
+                                                            </div>
+                                                        </td>
+                                                        <td><span class="badge badge-pending">Pending</span></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="payment-card">
+                                                        <td>Jun 13, 2023</td>
+                                                        <td>Emma Rodriguez</td>
+                                                        <td>FC-1003</td>
+                                                        <td>$28.25</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="payment-method-icon credit-card">
+                                                                    <i class="fas fa-credit-card"></i>
+                                                                </div>
+                                                                <span>Credit Card</span>
+                                                            </div>
+                                                        </td>
+                                                        <td><span class="badge badge-paid">Paid</span></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="payment-card">
+                                                        <td>Jun 12, 2023</td>
+                                                        <td>David Wilson</td>
+                                                        <td>FC-1004</td>
+                                                        <td>$15.48</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="payment-method-icon bank-transfer">
+                                                                    <i class="fas fa-university"></i>
+                                                                </div>
+                                                                <span>Bank Transfer</span>
+                                                            </div>
+                                                        </td>
+                                                        <td><span class="badge badge-refunded">Refunded</span></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="payment-card">
+                                                        <td>Jun 11, 2023</td>
+                                                        <td>Lisa Brown</td>
+                                                        <td>FC-1005</td>
+                                                        <td>$89.75</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="payment-method-icon crypto-wallet">
+                                                                    <i class="fab fa-bitcoin"></i>
+                                                                </div>
+                                                                <span>BTC</span>
+                                                            </div>
+                                                        </td>
+                                                        <td><span class="badge badge-failed">Failed</span></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <nav aria-label="Transactions pagination">
+                                            <ul class="pagination justify-content-center mt-3">
+                                                <li class="page-item disabled">
+                                                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                                </li>
+                                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="#">Next</a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                    
+                                    <!-- Payouts Tab -->
+                                    <div class="tab-pane fade" id="payouts" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="mb-0">Payout History</h5>
+                                            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#requestPayoutModal">
+                                                <i class="fas fa-money-bill-wave me-1"></i> Request Payout
+                                            </button>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Payout ID</th>
+                                                        <th>Amount</th>
+                                                        <th>Method</th>
+                                                        <th>Status</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="payment-card">
+                                                        <td>Jun 1, 2023</td>
+                                                        <td>PY-230601</td>
+                                                        <td>$2,845.00</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="payment-method-icon bank-transfer">
+                                                                    <i class="fas fa-university"></i>
+                                                                </div>
+                                                                <span>Bank Transfer</span>
+                                                            </div>
+                                                        </td>
+                                                        <td><span class="badge badge-paid">Completed</span></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="payment-card">
+                                                        <td>May 1, 2023</td>
+                                                        <td>PY-230501</td>
+                                                        <td>$2,456.00</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="payment-method-icon bank-transfer">
+                                                                    <i class="fas fa-university"></i>
+                                                                </div>
+                                                                <span>Bank Transfer</span>
+                                                            </div>
+                                                        </td>
+                                                        <td><span class="badge badge-paid">Completed</span></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="payment-card">
+                                                        <td>Apr 1, 2023</td>
+                                                        <td>PY-230401</td>
+                                                        <td>$2,120.00</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="payment-method-icon crypto-wallet">
+                                                                    <i class="fab fa-ethereum"></i>
+                                                                </div>
+                                                                <span>ETH Wallet</span>
+                                                            </div>
+                                                        </td>
+                                                        <td><span class="badge badge-paid">Completed</span></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="payment-card">
+                                                        <td>Mar 1, 2023</td>
+                                                        <td>PY-230301</td>
+                                                        <td>$1,845.00</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="payment-method-icon bank-transfer">
+                                                                    <i class="fas fa-university"></i>
+                                                                </div>
+                                                                <span>Bank Transfer</span>
+                                                            </div>
+                                                        </td>
+                                                        <td><span class="badge badge-paid">Completed</span></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Invoices Tab -->
+                                    <div class="tab-pane fade" id="invoices" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="mb-0">Invoice History</h5>
+                                            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#createInvoiceModal">
+                                                <i class="fas fa-plus me-1"></i> Create Invoice
+                                            </button>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Invoice #</th>
+                                                        <th>Customer</th>
+                                                        <th>Amount</th>
+                                                        <th>Status</th>
+                                                        <th>Due Date</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="payment-card">
+                                                        <td>Jun 10, 2023</td>
+                                                        <td>INV-230610</td>
+                                                        <td>Springfield Cafe</td>
+                                                        <td>$1,245.00</td>
+                                                        <td><span class="badge badge-paid">Paid</span></td>
+                                                        <td>Jun 30, 2023</td>
+                                                        <td>
+                                                            <div class="dropdown">
+                                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                                    <i class="fas fa-ellipsis-h"></i>
+                                                                </button>
+                                                                <ul class="dropdown-menu">
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i> View</a></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i> Download</a></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-envelope me-2"></i> Resend</a></li>
+                                                                    <li><hr class="dropdown-divider"></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i> Print</a></li>
+                                                                </ul>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="payment-card">
+                                                        <td>May 15, 2023</td>
+                                                        <td>INV-230515</td>
+                                                        <td>Organic Market Co.</td>
+                                                        <td>$856.00</td>
+                                                        <td><span class="badge badge-paid">Paid</span></td>
+                                                        <td>May 30, 2023</td>
+                                                        <td>
+                                                            <div class="dropdown">
+                                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                                    <i class="fas fa-ellipsis-h"></i>
+                                                                </button>
+                                                                <ul class="dropdown-menu">
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i> View</a></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i> Download</a></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-envelope me-2"></i> Resend</a></li>
+                                                                    <li><hr class="dropdown-divider"></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i> Print</a></li>
+                                                                </ul>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="payment-card">
+                                                        <td>Apr 20, 2023</td>
+                                                        <td>INV-230420</td>
+                                                        <td>Farmers Collective</td>
+                                                        <td>$1,420.00</td>
+                                                        <td><span class="badge badge-paid">Paid</span></td>
+                                                        <td>Apr 30, 2023</td>
+                                                        <td>
+                                                            <div class="dropdown">
+                                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                                    <i class="fas fa-ellipsis-h"></i>
+                                                                </button>
+                                                                <ul class="dropdown-menu">
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i> View</a></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i> Download</a></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-envelope me-2"></i> Resend</a></li>
+                                                                    <li><hr class="dropdown-divider"></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i> Print</a></li>
+                                                                </ul>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="payment-card">
+                                                        <td>Mar 10, 2023</td>
+                                                        <td>INV-230310</td>
+                                                        <td>Green Restaurant</td>
+                                                        <td>$980.00</td>
+                                                        <td><span class="badge badge-paid">Paid</span></td>
+                                                        <td>Mar 31, 2023</td>
+                                                        <td>
+                                                            <div class="dropdown">
+                                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                                    <i class="fas fa-ellipsis-h"></i>
+                                                                </button>
+                                                                <ul class="dropdown-menu">
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i> View</a></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i> Download</a></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-envelope me-2"></i> Resend</a></li>
+                                                                    <li><hr class="dropdown-divider"></li>
+                                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i> Print</a></li>
+                                                                </ul>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods & Analytics -->
+                    <div class="col-lg-4 mb-4">
+                        <!-- Payment Methods -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Payment Methods</h5>
+                                <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addPaymentMethodModal">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <div class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="payment-method-icon bank-transfer">
+                                                <i class="fas fa-university"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-1">Bank Transfer</h6>
+                                                <small class="text-muted">Chase •••• 5678</small>
+                                            </div>
+                                            <span class="badge bg-light text-dark">Default</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="payment-method-icon crypto-wallet">
+                                                <i class="fab fa-ethereum"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-1">Ethereum Wallet</h6>
+                                                <small class="text-muted">0x89d2...3a4b</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="payment-method-icon credit-card">
+                                                <i class="fas fa-credit-card"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-1">Credit Card</h6>
+                                                <small class="text-muted">Visa •••• 4242</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Revenue Breakdown -->
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Revenue Breakdown</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="revenueChart" height="250"></canvas>
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Credit Card</span>
+                                        <strong>65%</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Crypto Payments</span>
+                                        <strong>25%</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Bank Transfer</span>
+                                        <strong>10%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Request Payout Modal -->
+    <div class="modal fade" id="requestPayoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Request Payout</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="payoutForm">
+                        <div class="mb-3">
+                            <label class="form-label">Available Balance</label>
+                            <input type="text" class="form-control" value="$2,845.00" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Payout Amount</label>
+                            <input type="text" class="form-control" placeholder="Enter amount">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Payout Method</label>
+                            <select class="form-select">
+                                <option>Bank Transfer (Chase •••• 5678)</option>
+                                <option>Ethereum Wallet (0x89d2...3a4b)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Payout Schedule</label>
+                            <select class="form-select">
+                                <option>One-time payout</option>
+                                <option>Weekly automatic payout</option>
+                                <option>Monthly automatic payout</option>
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-money-bill-wave me-2"></i> Request Payout
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Invoice Modal -->
+    <div class="modal fade" id="createInvoiceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Invoice</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="invoiceForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Customer</label>
+                                <select class="form-select">
+                                    <option value="">Select customer</option>
+                                    <option>Springfield Cafe</option>
+                                    <option>Organic Market Co.</option>
+                                    <option>Farmers Collective</option>
+                                    <option>Green Restaurant</option>
+                                    <option>New Customer</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Due Date</label>
+                                <input type="date" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Invoice Items</label>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Quantity</th>
+                                                <th>Price</th>
+                                                <th>Total</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <select class="form-select">
+                                                        <option value="">Select product</option>
+                                                        <option>Organic Strawberries</option>
+                                                        <option>Free-Range Eggs</option>
+                                                        <option>Heirloom Tomatoes</option>
+                                                        <option>Raw Honey</option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control" value="1" min="1">
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control" placeholder="0.00">
+                                                </td>
+                                                <td>$0.00</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="5" class="text-end">
+                                                    <button class="btn btn-sm btn-outline-success">
+                                                        <i class="fas fa-plus me-1"></i> Add Item
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </t
